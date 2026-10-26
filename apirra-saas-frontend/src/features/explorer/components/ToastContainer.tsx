@@ -25,50 +25,52 @@ const ToastContainer: React.FC<ToastContainerProps> = ({
     return () => clearTimeout(timer);
   }, [toasts, onRemove, autoCloseDuration]);
 
+  // Small status mark next to the message; the toast itself stays neutral.
   const getToastColor = (type: Toast["type"]) => {
     switch (type) {
       case "success":
-        return "bg-green-500";
+        return "bg-[#5fc4a4]";
       case "error":
-        return "bg-red-500";
+        return "bg-[#f08a7e]";
       case "info":
       default:
-        return "bg-blue-500";
-    }
-  };
-
-  const getToastIcon = (type: Toast["type"]) => {
-    switch (type) {
-      case "success":
-        return "✓";
-      case "error":
-        return "✕";
-      case "info":
-      default:
-        return "ℹ";
+        return "bg-[#c6ccc6]";
     }
   };
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 space-y-2 sm:inset-x-auto sm:right-4 sm:left-auto">
+    <div className="fixed inset-x-4 bottom-4 z-50 space-y-2 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:left-auto">
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`animate-in fade-in slide-in-from-right-2 w-full rounded-lg px-4 py-3 text-sm font-medium text-white shadow-lg shadow-black/40 ring-1 ring-white/10 transition sm:w-auto sm:max-w-sm ${getToastColor(
-            toast.type,
-          )}`}
+          className="w-full rounded-lg bg-ink px-4 py-3 text-sm text-paper shadow-lg shadow-ink/20 sm:w-auto sm:min-w-64 sm:max-w-sm"
           role="status"
           aria-live="polite"
         >
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{getToastIcon(toast.type)}</span>
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden="true"
+              className={`h-2 w-2 shrink-0 rounded-full ${getToastColor(toast.type)}`}
+            />
             <span className="break-words">{toast.message}</span>
             <button
               onClick={() => onRemove(toast.id)}
-              className="ml-auto text-white/70 hover:text-white"
+              className="-mr-1 ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded text-paper/60 hover:bg-white/10 hover:text-paper"
               aria-label="Dismiss notification"
             >
-              ×
+              <svg
+                className="h-3.5 w-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </button>
           </div>
         </div>

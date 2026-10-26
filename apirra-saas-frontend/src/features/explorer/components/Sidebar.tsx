@@ -121,20 +121,18 @@ const Sidebar: React.FC<Props> = ({
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/10 bg-[#05070d] shadow-2xl shadow-black/50 transition-transform duration-200 ease-out md:static md:z-auto md:w-80 md:translate-x-0 md:bg-white/[0.02] md:shadow-none ${
+      className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-line bg-surface shadow-xl shadow-black/15 transition-transform duration-200 ease-out md:static md:z-auto md:w-80 md:translate-x-0 md:shadow-none ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
       {/* SEARCH + HEADER */}
-      <div className="border-b border-white/10 px-4 py-3">
-        <div className="mb-1 flex items-center justify-between md:hidden">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-            Endpoints
-          </p>
+      <div className="border-b border-line px-4 pb-3 pt-3">
+        <div className="mb-2 flex items-center justify-between md:hidden">
+          <p className="text-sm font-medium text-ink">Endpoints</p>
           <button
             onClick={onClose}
             aria-label="Close sidebar"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-white/10 hover:text-white"
+            className="btn btn-quiet h-8 w-8 p-0"
           >
             <svg
               className="h-4 w-4"
@@ -151,9 +149,9 @@ const Sidebar: React.FC<Props> = ({
             </svg>
           </button>
         </div>
-        <div className="relative mt-1">
+        <div className="relative">
           <svg
-            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500"
+            className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-faint"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -170,15 +168,16 @@ const Sidebar: React.FC<Props> = ({
             ref={searchRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full rounded-md border border-white/10 bg-white/5 py-2 pl-8 pr-7 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20"
-            placeholder="Search endpoints... (press /)"
+            className="field bg-paper py-1.5 pl-8 pr-8 text-[13px]"
+            placeholder="Search endpoints"
+            aria-label="Search endpoints"
           />
 
-          {query && (
+          {query ? (
             <button
               onClick={() => setQuery("")}
               aria-label="Clear search"
-              className="absolute right-2 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full text-slate-500 hover:bg-white/10 hover:text-white"
+              className="absolute right-1.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-faint hover:bg-sunken hover:text-ink"
             >
               <svg
                 className="h-3 w-3"
@@ -194,6 +193,10 @@ const Sidebar: React.FC<Props> = ({
                 />
               </svg>
             </button>
+          ) : (
+            <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-line-strong px-1.5 font-mono text-[10px] text-faint">
+              /
+            </kbd>
           )}
         </div>
 
@@ -206,11 +209,12 @@ const Sidebar: React.FC<Props> = ({
                 <button
                   key={method}
                   onClick={() => toggleMethod(method)}
-                  className={`${METHOD_STYLES[method] ?? "method-pill bg-white/10 text-slate-300"} cursor-pointer transition-opacity ${
+                  aria-pressed={isActive}
+                  className={`${METHOD_STYLES[method] ?? "method-pill"} min-w-0 cursor-pointer px-2 transition ${
                     activeMethods.size > 0 && !isActive
-                      ? "opacity-35"
+                      ? "opacity-40 hover:opacity-70"
                       : "opacity-100"
-                  } ${isActive ? "ring-2 ring-blue-400" : ""}`}
+                  } ${isActive ? "ring-1 ring-current" : ""}`}
                 >
                   {method.toUpperCase()}
                 </button>
@@ -219,7 +223,7 @@ const Sidebar: React.FC<Props> = ({
           </div>
         )}
 
-        <p className="mt-2.5 text-[11px] text-slate-500">
+        <p className="mt-2.5 text-xs text-faint">
           {isSearching
             ? `${filtered.length} of ${endpoints.length} endpoints`
             : `${endpoints.length} endpoints`}
@@ -229,25 +233,10 @@ const Sidebar: React.FC<Props> = ({
       {/* LIST */}
       <nav className="flex-1 overflow-y-auto py-2">
         {filtered.length === 0 && (
-          <div className="flex flex-col items-center px-6 py-12 text-center">
-            <svg
-              className="mb-2 h-8 w-8 text-slate-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
-              />
-            </svg>
-            <p className="text-xs font-medium text-slate-400">
-              No endpoints match
-            </p>
-            <p className="mt-1 text-[11px] text-slate-500">
-              Try a different search term or method filter.
+          <div className="px-6 py-12 text-center">
+            <p className="text-sm font-medium text-ink">No endpoints match</p>
+            <p className="mt-1 text-xs text-muted">
+              Try another search term, or clear the method filter.
             </p>
           </div>
         )}
@@ -256,17 +245,15 @@ const Sidebar: React.FC<Props> = ({
           const isCollapsed = !isSearching && collapsedTags.has(tag);
 
           return (
-            <div key={tag} className="mb-2">
+            <div key={tag} className="mb-1">
               {/* GROUP HEADER */}
               <button
                 onClick={() => toggleGroup(tag)}
-                className="flex w-full items-center justify-between px-5 py-1.5 text-left hover:bg-white/5"
+                aria-expanded={!isCollapsed}
+                className="flex w-full items-center gap-1.5 px-4 pb-1 pt-2.5 text-left text-faint hover:text-ink"
               >
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-                  {tag} ({eps.length})
-                </p>
                 <svg
-                  className={`h-3 w-3 text-slate-500 transition-transform ${
+                  className={`h-3 w-3 shrink-0 transition-transform ${
                     isCollapsed ? "-rotate-90" : ""
                   }`}
                   fill="none"
@@ -276,15 +263,18 @@ const Sidebar: React.FC<Props> = ({
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth={2.5}
                     d="M19 9l-7 7-7-7"
                   />
                 </svg>
+                <p className="text-xs font-medium">
+                  {tag} ({eps.length})
+                </p>
               </button>
 
               {/* ITEMS */}
               {!isCollapsed && (
-                <div className="space-y-1 px-2 pt-1">
+                <div>
                   {eps.map((ep) => {
                     const isActive = isSameEndpoint(selected, ep);
 
@@ -293,18 +283,17 @@ const Sidebar: React.FC<Props> = ({
                         key={`${ep.method}-${ep.path}`}
                         onClick={() => onSelect(ep)}
                         title={ep.summary || ep.path}
-                        className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-left transition-colors
-                      ${
-                        isActive
-                          ? "bg-blue-500/10 border-l-4 border-blue-400"
-                          : "border-l-4 border-transparent hover:bg-white/5"
-                      }`}
+                        aria-current={isActive ? "true" : undefined}
+                        className={`flex w-full items-start gap-2.5 px-4 py-1.5 text-left transition-colors ${
+                          isActive
+                            ? "bg-sunken shadow-[inset_2px_0_0_var(--color-ink)]"
+                            : "hover:bg-paper"
+                        }`}
                       >
                         {/* METHOD */}
                         <span
-                          className={`text-[10px] font-bold tracking-wide px-2 py-1 rounded-md ${
-                            METHOD_STYLES[ep.method] ??
-                            "bg-white/10 text-slate-300"
+                          className={`mt-px shrink-0 ${
+                            METHOD_STYLES[ep.method] ?? "method-pill"
                           }`}
                         >
                           {ep.method.toUpperCase()}
@@ -313,16 +302,14 @@ const Sidebar: React.FC<Props> = ({
                         {/* PATH */}
                         <span className="min-w-0 flex-1">
                           <span
-                            className={`block truncate font-mono text-xs ${
-                              isActive
-                                ? "text-blue-300 font-medium"
-                                : "text-slate-300"
+                            className={`block truncate font-mono text-[12px] leading-5 ${
+                              isActive ? "font-medium text-ink" : "text-ink-soft"
                             }`}
                           >
                             {ep.path}
                           </span>
                           {ep.summary && (
-                            <span className="block truncate text-[10px] text-slate-500">
+                            <span className="block truncate text-xs text-faint">
                               {ep.summary}
                             </span>
                           )}

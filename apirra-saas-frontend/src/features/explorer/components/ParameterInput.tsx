@@ -22,7 +22,7 @@ const ParameterInput: React.FC<ParameterInputProps> = ({
   if (schema?.type === "boolean") {
     return (
       <select
-        className="flex-1 min-w-0 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white transition hover:border-white/20 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 disabled:opacity-50"
+        className="field"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={isDisabled}
@@ -41,7 +41,7 @@ const ParameterInput: React.FC<ParameterInputProps> = ({
     <input
       type={isNumeric ? "number" : "text"}
       placeholder={param.description ?? `Enter ${param.name}`}
-      className="flex-1 min-w-0 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-slate-500 transition hover:border-white/20 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 disabled:opacity-50"
+      className="field font-mono text-[13px]"
       required={param.required}
       value={value}
       onChange={(e) => onChange(e.target.value)}

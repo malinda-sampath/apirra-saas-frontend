@@ -86,6 +86,7 @@ src/
 │       │   ├── ParameterSection.tsx
 │       │   ├── ParameterInput.tsx
 │       │   ├── ResponseDisplay.tsx
+│       │   ├── RequestBar.tsx      # sticky "METHOD | live URL | Send" row at the top of each method view
 │       │   ├── RequestHistory.tsx
 │       │   ├── ToastContainer.tsx
 │       │   ├── SpecViewerModal.tsx # read-only "View Spec" overlay (Overview + Raw JSON)
@@ -97,7 +98,8 @@ src/
 │       ├── types/
 │       │   └── index.ts        # canonical ParsedApiMethod, ExecutePayload, HttpMethod, Toast, OpenAPISpec
 │       └── utils/
-│           └── openApiParser.ts
+│           ├── openApiParser.ts
+│           └── highlightJson.tsx  # JSON → colored spans for response / spec viewers
 ├── shared/
 │   └── components/
 │       └── UserInput.tsx
@@ -121,11 +123,28 @@ src/
   `Object.fromEntries(...).filter(v !== undefined && v !== "")`.
 - **Toasts**: use the local `addToast(message, type)` / `removeToast(id)`
   pattern already in each method component — there's no global toast store.
-- **Styling**: Tailwind utility classes inline, with a small set of shared
-  CSS custom properties for method colors (`--color-get`, `--color-post`,
-  etc. in `index.css`) and a `.method-pill-*` component class used by
-  `Sidebar`. New method-specific UI should reuse these variables rather than
-  hardcoding new colors.
+- **Styling**: light theme. Design tokens live in `index.css` under
+  Tailwind v4's `@theme`, so each is also a utility: surfaces (`paper`,
+  `surface`, `sunken`), text (`ink`, `ink-soft`, `muted`, `faint`), rules
+  (`line`, `line-strong`), `accent` (also used for 2xx), `danger`, and one
+  color per HTTP method (`--color-get`, `--color-post`, … → `text-get`,
+  `bg-post/10`). Fonts: Schibsted Grotesk (UI) and JetBrains Mono (code
+  only), loaded in `index.html`. Shared component classes: `.panel`,
+  `.field`, `.btn` + `.btn-primary`/`-secondary`/`-quiet`/`-danger`,
+  `.code-block`, and `.method-pill-*`. Reuse these rather than hardcoding
+  colors; avoid gradients, glows, and ALL-CAPS labels.
+- **Dark mode** follows `prefers-color-scheme` only (no toggle): the same
+  token names are redefined in `index.css`, so anything built on tokens
+  switches automatically. Hardcoded hex/`white`/`black` classes won't. Use
+  `bg-black/…` for overlays, and the `terminal`/`terminal-text` tokens for
+  surfaces that should stay dark in both themes (the cURL block).
+- **Method view layout** (generated identically for all four method
+  components): header (summary as `h1`) → sticky `RequestBar` holding the
+  Send button (and DELETE's Cancel/confirm notice) → Parameters → Request
+  body (POST/PUT) → Response (`ResponseDisplay` + `CurlGenerator`) →
+  Possible responses → History. `ResponseDisplay` unpacks executeRequest's
+  `{ status, data, headers, message }` shape for its status line, size,
+  body, and headers. It receives `isLoading={isRunning}`.
 - **Reset on endpoint change**: every method component resets its local
   state via a `useEffect` keyed on `endpoint.path` (wrapped in a
   `setTimeout(…, 0)` to dodge a render-order issue). Preserve this when

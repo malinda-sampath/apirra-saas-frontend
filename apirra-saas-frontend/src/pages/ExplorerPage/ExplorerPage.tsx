@@ -59,13 +59,13 @@ const ExplorerPage = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#05070d]">
+    <div className="flex h-screen overflow-hidden bg-paper text-ink">
       {/* Mobile drawer backdrop */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
           aria-hidden="true"
-          className="fixed inset-0 z-30 bg-black/60 md:hidden"
+          className="fixed inset-0 z-30 bg-ink/30 md:hidden"
         />
       )}
 
@@ -81,13 +81,13 @@ const ExplorerPage = () => {
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 items-center justify-between border-b border-white/10 bg-[#05070d]/80 px-3 backdrop-blur-xl sm:h-18 sm:px-6">
+        <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-line bg-surface px-3 sm:px-6">
           {/* LEFT SIDE */}
-          <div className="flex items-center">
+          <div className="flex min-w-0 items-center gap-2">
             <button
               onClick={() => setSidebarOpen(true)}
               aria-label="Open sidebar"
-              className="mr-1 flex h-9 w-9 items-center justify-center rounded-md text-slate-300 hover:bg-white/10 hover:text-white md:hidden"
+              className="btn btn-quiet h-9 w-9 p-0 md:hidden"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -108,18 +108,31 @@ const ExplorerPage = () => {
             <button
               onClick={handleGoHome}
               aria-label="Back to home"
-              className="rounded-md transition hover:opacity-80"
+              className="shrink-0 rounded-md"
             >
               <Logo />
             </button>
+
+            {spec?.info?.title && (
+              <p className="hidden min-w-0 items-baseline gap-2 border-l border-line pl-3 text-sm sm:flex">
+                <span className="truncate font-medium text-ink">
+                  {spec.info.title}
+                </span>
+                {spec.info.version && (
+                  <span className="shrink-0 font-mono text-xs text-faint">
+                    v{spec.info.version}
+                  </span>
+                )}
+              </p>
+            )}
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {spec && (
               <button
                 onClick={() => setSpecViewerOpen(true)}
-                className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10 sm:text-sm"
+                className="btn btn-quiet"
               >
                 <svg
                   className="h-4 w-4"
@@ -130,18 +143,15 @@ const ExplorerPage = () => {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth={1.75}
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                <span className="hidden sm:inline">View Spec</span>
+                <span className="hidden sm:inline">View spec</span>
               </button>
             )}
 
-            <button
-              onClick={handleGoGetStarted}
-              className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10 sm:text-sm"
-            >
+            <button onClick={handleGoGetStarted} className="btn btn-secondary">
               <svg
                 className="h-4 w-4"
                 fill="none"
@@ -151,11 +161,11 @@ const ExplorerPage = () => {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  strokeWidth={1.75}
+                  d="M12 5v14M5 12h14"
                 />
               </svg>
-              <span className="hidden sm:inline">New Spec</span>
+              <span className="hidden sm:inline">New spec</span>
             </button>
           </div>
         </header>
@@ -164,7 +174,7 @@ const ExplorerPage = () => {
           <SpecViewerModal spec={spec} onClose={() => setSpecViewerOpen(false)} />
         )}
 
-        <main className="flex-1 overflow-y-auto p-3 sm:p-6">
+        <main className="flex-1 overflow-y-auto">
           {selected ? (
             <MethodRenderer
               key={`${selected.method}-${selected.path}`}
@@ -174,27 +184,17 @@ const ExplorerPage = () => {
               baseUrl={baseUrl}
             />
           ) : (
-            <div className="flex h-full flex-col items-center justify-center text-center">
-              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
-                <svg
-                  className="h-7 w-7 text-blue-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-              </div>
-              <p className="text-sm font-medium text-white">
-                Select an endpoint
+            <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+              <p className="text-base font-medium text-ink">
+                Select an endpoint to get started
               </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Choose a route from the sidebar to inspect it
+              <p className="mt-1.5 max-w-xs text-sm leading-relaxed text-muted">
+                {endpoints.length} endpoints loaded. Pick one from the list, or
+                press{" "}
+                <kbd className="rounded border border-line-strong bg-surface px-1.5 py-0.5 font-mono text-xs text-ink">
+                  /
+                </kbd>{" "}
+                to search.
               </p>
             </div>
           )}

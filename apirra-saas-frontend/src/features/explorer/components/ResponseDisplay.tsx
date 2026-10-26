@@ -10,6 +10,13 @@ type ResponseDisplayProps = {
   onTabChange: (tab: "response" | "request") => void;
 };
 
+const tabClass = (isActive: boolean) =>
+  `-mb-px border-b-2 px-1 pb-2.5 text-sm font-medium transition ${
+    isActive
+      ? "border-ink text-ink"
+      : "border-transparent text-muted hover:text-ink"
+  }`;
+
 const ResponseDisplay: React.FC<ResponseDisplayProps> = ({
   response,
   baseUrl,
@@ -21,9 +28,9 @@ const ResponseDisplay: React.FC<ResponseDisplayProps> = ({
 }) => {
   if (response === null) {
     return (
-      <div className="rounded-lg border-2 border-dashed border-white/10 p-8 text-center">
-        <p className="text-sm text-slate-500">
-          Click "Send Request" to execute the API call and see the response here
+      <div className="rounded-lg border border-dashed border-line-strong px-6 py-10 text-center">
+        <p className="text-sm text-muted">
+          The response will show up here after you send the request.
         </p>
       </div>
     );
@@ -44,14 +51,13 @@ const ResponseDisplay: React.FC<ResponseDisplayProps> = ({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-3">
+      <div
+        role="tablist"
+        className="flex flex-wrap items-end gap-5 border-b border-line"
+      >
         <button
           onClick={() => onTabChange("response")}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-            activeTab === "response"
-              ? "bg-blue-500/15 text-blue-300"
-              : "text-slate-400 hover:text-white"
-          }`}
+          className={tabClass(activeTab === "response")}
           aria-selected={activeTab === "response"}
           role="tab"
         >
@@ -59,64 +65,56 @@ const ResponseDisplay: React.FC<ResponseDisplayProps> = ({
         </button>
         <button
           onClick={() => onTabChange("request")}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-            activeTab === "request"
-              ? "bg-blue-500/15 text-blue-300"
-              : "text-slate-400 hover:text-white"
-          }`}
+          className={tabClass(activeTab === "request")}
           aria-selected={activeTab === "request"}
           role="tab"
         >
-          Request Details
+          Request details
         </button>
         <button
           onClick={() => onCopy(responseText)}
-          className="ml-auto rounded-lg bg-white/5 px-3 py-2 text-xs font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
+          className="btn btn-quiet mb-1.5 ml-auto text-[13px]"
           aria-label="Copy response"
         >
-          Copy Response
+          Copy
         </button>
       </div>
 
       {activeTab === "response" ? (
-        <pre className="max-h-96 min-h-48 overflow-auto rounded-lg border border-white/10 bg-black/40 p-4 font-mono text-sm text-emerald-400">
+        <pre className="code-block max-h-[28rem] min-h-48 overflow-auto">
           {responseText}
         </pre>
       ) : (
-        <div className="space-y-4 rounded-lg border border-white/10 bg-white/[0.02] p-4">
+        <dl className="panel divide-y divide-line text-sm">
           {/* URL */}
-          <div>
-            <p className="mb-2 text-xs font-semibold uppercase text-slate-500">
-              URL
-            </p>
-            <code className="block break-all rounded bg-white/5 p-2 font-mono text-xs text-white">
+          <div className="grid gap-1 px-4 py-3 sm:grid-cols-[8rem_1fr] sm:gap-4">
+            <dt className="text-muted">URL</dt>
+            <dd className="break-all font-mono text-[13px] text-ink">
               {cleanBaseUrl(baseUrl)}
               {path}
-            </code>
+            </dd>
           </div>
 
           {/* Method */}
-          <div>
-            <p className="mb-2 text-xs font-semibold uppercase text-slate-500">
-              Method
-            </p>
-            <code className="inline-block rounded bg-blue-500/15 px-2 py-1 font-mono text-xs font-semibold text-blue-300">
+          <div className="grid gap-1 px-4 py-3 sm:grid-cols-[8rem_1fr] sm:gap-4">
+            <dt className="text-muted">Method</dt>
+            <dd className="font-mono text-[13px] font-semibold text-ink">
               GET
-            </code>
+            </dd>
           </div>
 
           {/* Parameters */}
           {Object.keys(paramValues).length > 0 && (
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase text-slate-500">
-                Parameters Sent
-              </p>
-              <pre className="overflow-auto rounded bg-white/5 p-2 font-mono text-xs text-white">
-                {JSON.stringify(paramValues, null, 2)}
-              </pre>
+            <div className="grid gap-1 px-4 py-3 sm:grid-cols-[8rem_1fr] sm:gap-4">
+              <dt className="text-muted">Parameters sent</dt>
+              <dd>
+                <pre className="overflow-auto font-mono text-[13px] text-ink">
+                  {JSON.stringify(paramValues, null, 2)}
+                </pre>
+              </dd>
             </div>
           )}
-        </div>
+        </dl>
       )}
     </div>
   );

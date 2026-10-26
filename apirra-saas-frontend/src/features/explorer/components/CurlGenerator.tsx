@@ -91,42 +91,48 @@ const CurlGenerator: React.FC<CurlGeneratorProps> = ({
     <div className="space-y-3">
       <button
         onClick={onToggle}
-        className="rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
+        className="btn btn-quiet -ml-2.5 text-[13px]"
         aria-expanded={isVisible}
         aria-controls="curl-command-section"
       >
+        <svg
+          className={`h-3 w-3 transition-transform ${isVisible ? "" : "-rotate-90"}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2.5}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
         {isVisible ? "Hide cURL" : "Show cURL"}
       </button>
 
       {isVisible && (
         <div
           id="curl-command-section"
-          className="rounded-lg border border-white/10 bg-black/40 p-4"
+          className="overflow-hidden rounded-lg bg-ink text-paper"
         >
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              cURL Command
+          <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
+            <p className="text-xs text-paper/60">
+              Same request, ready for a terminal
             </p>
             <button
               onClick={() => onCopy(curlCommand)}
-              className="rounded px-2 py-1 text-xs font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
+              className="rounded px-2 py-1 text-xs font-medium text-paper/80 transition hover:bg-white/10 hover:text-paper"
               aria-label="Copy cURL command"
             >
               Copy
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <code className="block whitespace-pre break-words font-mono text-xs text-emerald-400">
+          <div className="overflow-x-auto px-4 py-3">
+            <code className="block whitespace-pre font-mono text-[12.5px] leading-relaxed">
               {curlCommand}
             </code>
-          </div>
-
-          {/* Additional info */}
-          <div className="mt-3 border-t border-white/10 pt-3">
-            <p className="text-xs text-slate-500">
-              Paste this command in your terminal to make the same request
-            </p>
           </div>
         </div>
       )}

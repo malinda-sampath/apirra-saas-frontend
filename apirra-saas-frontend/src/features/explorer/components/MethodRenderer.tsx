@@ -56,10 +56,12 @@ const MethodRenderer: React.FC<Props> = ({
       );
     default:
       return (
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
-          <p className="text-sm text-slate-400">
-            Method <code className="font-mono">{endpoint.method}</code> is not
-            yet supported.
+        <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8">
+          <p className="text-sm text-muted">
+            <code className="font-mono font-semibold text-ink">
+              {endpoint.method.toUpperCase()}
+            </code>{" "}
+            requests can&apos;t be sent from Apirra yet.
           </p>
         </div>
       );

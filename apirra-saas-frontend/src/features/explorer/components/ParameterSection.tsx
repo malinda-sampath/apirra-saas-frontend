@@ -22,48 +22,49 @@ const ParameterSection: React.FC<ParameterSectionProps> = ({
   if (params.length === 0) return null;
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-        {title}
-      </h3>
-      {params.map((p, i) => (
-        <div
-          key={i}
-          className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.02] p-3 transition hover:border-white/20"
-        >
-          <div className="flex flex-wrap items-center gap-2">
-            <code className="font-mono text-sm font-semibold text-blue-300 break-all">
-              {p.name}
-            </code>
-            {p.required && (
-              <span className="rounded bg-red-500/15 px-2 py-0.5 text-[10px] font-bold text-red-300">
-                REQUIRED
-              </span>
-            )}
-            <div className="ml-auto flex gap-2">
-              <span className="rounded bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-300">
-                {p.in}
-              </span>
-              <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] font-medium text-slate-300">
+    <div>
+      <h3 className="mb-2 text-sm font-medium text-muted">{title}</h3>
+      <div className="panel divide-y divide-line">
+        {params.map((p, i) => (
+          <div
+            key={i}
+            className="grid gap-2 px-4 py-3 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] sm:items-start sm:gap-6"
+          >
+            <div className="min-w-0 sm:pt-2">
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <code className="break-all font-mono text-[13px] font-semibold text-ink">
+                  {p.name}
+                </code>
+                {p.required && (
+                  <span className="text-xs font-medium text-danger">
+                    required
+                  </span>
+                )}
+              </div>
+              <p className="mt-0.5 font-mono text-[11px] text-faint">
                 {(p.schema as OpenAPIV3.SchemaObject | undefined)?.type ??
                   "string"}
-              </span>
+              </p>
+            </div>
+
+            <div className="min-w-0">
+              <ParameterInput
+                param={p}
+                value={paramValues[p.name] ?? ""}
+                onChange={(value) => onParamChange(p.name, value)}
+                disabled={disabled}
+                loading={loading}
+              />
+
+              {p.description && (
+                <p className="mt-1.5 text-xs leading-relaxed text-muted">
+                  {p.description}
+                </p>
+              )}
             </div>
           </div>
-
-          <ParameterInput
-            param={p}
-            value={paramValues[p.name] ?? ""}
-            onChange={(value) => onParamChange(p.name, value)}
-            disabled={disabled}
-            loading={loading}
-          />
-
-          {p.description && (
-            <p className="text-xs text-slate-400">{p.description}</p>
-          )}
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };

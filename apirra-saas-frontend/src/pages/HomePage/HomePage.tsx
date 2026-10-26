@@ -1,4 +1,4 @@
-import { useEffect, useState, type JSX, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { fetchOpenApiSpec } from "../../features/explorer/api/openApiService";
 import { parseOpenApi } from "../../features/explorer/utils/openApiParser";
@@ -14,152 +14,169 @@ import Logo from "../../shared/components/Logo";
 const DEMO_SPEC_PATH = "/test-doc.json";
 const DEMO_BASE_URL = "https://jsonplaceholder.typicode.com";
 
-const Icon = ({ children }: { children: ReactNode }) => (
-  <svg
-    className="h-5 w-5"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={1.75}
-  >
-    {children}
-  </svg>
-);
-
-const IconBolt = () => (
-  <Icon>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"
-    />
-  </Icon>
-);
-
-const IconPlay = () => (
-  <Icon>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M14.75 12 9.5 15.5v-7L14.75 12Z"
-    />
-    <circle cx="12" cy="12" r="9" strokeLinecap="round" />
-  </Icon>
-);
-
-const IconCode = () => (
-  <Icon>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="m9 8-4 4 4 4M15 8l4 4-4 4"
-    />
-  </Icon>
-);
-
-const IconTerminal = () => (
-  <Icon>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="m5 7 5 5-5 5M12 17h7"
-    />
-  </Icon>
-);
-
-const IconHistory = () => (
-  <Icon>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3.5 9A8.5 8.5 0 1 1 3 13.5M3.5 9V4M3.5 9h5"
-    />
-  </Icon>
-);
-
-const IconShield = () => (
-  <Icon>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 3.5 5 6v6c0 4.5 3 7 7 8.5 4-1.5 7-4 7-8.5V6l-7-2.5Z"
-    />
-  </Icon>
-);
-
-type Feature = { icon: JSX.Element; title: string; description: string };
-
-const FEATURES: Feature[] = [
+const FEATURES = [
   {
-    icon: <IconBolt />,
-    title: "Zero setup",
+    title: "Nothing to install",
     description:
-      "Paste any OpenAPI or Swagger URL and start exploring in seconds — no install, no account, no config.",
+      "Paste a spec URL and you're in. No desktop app, no account, no collection to import.",
   },
   {
-    icon: <IconPlay />,
-    title: "Try it out, for real",
+    title: "Real requests",
     description:
-      "Fill in parameters and a body, then fire an actual request straight from your browser and see what comes back.",
+      "Fill in path, query and header values, hit send, and read the actual response your API returns.",
   },
   {
-    icon: <IconCode />,
-    title: "Smart example bodies",
+    title: "Bodies written for you",
     description:
-      "POST, PUT and PATCH bodies are pre-filled from your schema, so you're never starting from a blank editor.",
+      "POST and PUT bodies start pre-filled from the request schema, so you edit a draft instead of a blank box.",
   },
   {
-    icon: <IconTerminal />,
     title: "Copy as cURL",
     description:
-      "Every request you build can be copied as a ready-to-run cURL command for your terminal or docs.",
+      "Whatever you've built can be copied as a cURL command for your terminal, a bug report, or the docs.",
   },
   {
-    icon: <IconHistory />,
-    title: "Request history",
+    title: "Per-endpoint history",
     description:
-      "Every response is kept in a local history per endpoint, so you can compare runs and replay past requests.",
+      "Each endpoint keeps its last ten requests, so you can bring back the values from an earlier run.",
   },
   {
-    icon: <IconShield />,
-    title: "Private by design",
+    title: "Stays in your browser",
     description:
-      "Requests go straight from your browser to your API. Nothing passes through a server you don't control.",
+      "Requests go from this tab straight to your API. There's no proxy in the middle reading your traffic.",
   },
 ];
 
 const STEPS = [
   {
-    step: "01",
-    title: "Paste your spec URL",
+    title: "Paste a spec URL",
     description:
-      "OpenAPI 3.x, Swagger 2.x — any publicly reachable JSON spec works.",
+      "Any reachable OpenAPI 3 or Swagger 2 document in JSON. For Spring apps that's usually /v3/api-docs.",
   },
   {
-    step: "02",
-    title: "Browse your endpoints",
+    title: "Pick an endpoint",
     description:
-      "Every method, grouped by tag, in a searchable sidebar built for fast lookup.",
+      "Endpoints are grouped by tag in the sidebar. Press / to search, or filter by method.",
   },
   {
-    step: "03",
-    title: "Try it & inspect",
+    title: "Send it",
     description:
-      "Send real requests and see status, headers and body come back instantly.",
+      "Fill in the parameters, send the request, and read the response right under the form.",
   },
 ];
 
-const FeatureCard = ({ icon, title, description }: Feature) => (
-  <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 transition hover:border-white/20 hover:bg-white/[0.04]">
-    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-500/20 to-violet-500/20 text-cyan-300 ring-1 ring-white/10">
-      {icon}
+// Static preview for the hero: mirrors what the explorer shows after
+// loading the demo spec, with GET /users selected.
+const PREVIEW_GROUPS = [
+  {
+    tag: "Posts",
+    endpoints: [
+      { method: "get", path: "/posts" },
+      { method: "post", path: "/posts" },
+      { method: "put", path: "/posts/{id}" },
+      { method: "delete", path: "/posts/{id}" },
+    ],
+  },
+  {
+    tag: "Users",
+    endpoints: [{ method: "get", path: "/users", active: true }],
+  },
+];
+
+const PREVIEW_RESPONSE = `[
+  {
+    "id": 1,
+    "name": "Leanne Graham",
+    "username": "Bret",
+    "email": "Sincere@april.biz"
+  },
+  …
+]`;
+
+const METHOD_TEXT: Record<string, string> = {
+  get: "text-get",
+  post: "text-post",
+  put: "text-put",
+  delete: "text-delete",
+};
+
+const ExplorerPreview = () => (
+  <div
+    aria-hidden="true"
+    className="panel overflow-hidden shadow-[0_1px_0_var(--color-line),0_18px_40px_-24px_rgba(24,33,30,0.35)]"
+  >
+    <div className="flex items-center gap-1.5 border-b border-line bg-paper px-3 py-2.5">
+      <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
+      <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
+      <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
+      <span className="ml-3 truncate font-mono text-[11px] text-faint">
+        jsonplaceholder.typicode.com
+      </span>
     </div>
-    <h3 className="mt-4 text-sm font-semibold text-white">{title}</h3>
-    <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
-      {description}
-    </p>
+
+    <div className="grid grid-cols-1 sm:grid-cols-[11.5rem_1fr]">
+      <ul className="hidden border-r border-line py-2 sm:block">
+        {PREVIEW_GROUPS.map((group) => (
+          <li key={group.tag}>
+            <p className="px-3 pb-1 pt-2 text-xs font-medium text-faint">
+              {group.tag}
+            </p>
+            <ul>
+              {group.endpoints.map((ep) => (
+                <li
+                  key={`${ep.method}-${ep.path}`}
+                  className={`flex items-center gap-2 px-3 py-1.5 font-mono text-[11px] ${
+                    "active" in ep
+                      ? "bg-sunken text-ink shadow-[inset_2px_0_0_var(--color-ink)]"
+                      : "text-muted"
+                  }`}
+                >
+                  <span
+                    className={`w-12 font-semibold ${METHOD_TEXT[ep.method]}`}
+                  >
+                    {ep.method.toUpperCase()}
+                  </span>
+                  <span className="truncate">{ep.path}</span>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+
+      <div className="min-w-0 p-4">
+        <div className="flex items-center gap-2 font-mono text-[13px]">
+          <span className="font-semibold text-get">GET</span>
+          <span className="truncate text-ink">/users</span>
+          <span className="ml-auto shrink-0 rounded bg-accent/10 px-1.5 py-0.5 text-[11px] font-medium text-accent">
+            200 OK
+          </span>
+        </div>
+        <p className="mt-1 text-xs text-faint">Came back in 84 ms</p>
+        <pre className="code-block mt-3 overflow-x-auto text-[12px] leading-relaxed">
+          {PREVIEW_RESPONSE}
+        </pre>
+      </div>
+    </div>
   </div>
+);
+
+const Spinner = () => (
+  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    />
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+    />
+  </svg>
 );
 
 const HomePage = () => {
@@ -224,342 +241,229 @@ const HomePage = () => {
     loadExplorer(
       baseUrl,
       baseUrl,
-      "Failed to load API spec. Check the URL and try again.",
+      "Failed to load API spec. Check the URL and that the server allows requests from this site (CORS).",
     );
 
   const handleLoadDemo = () =>
     loadExplorer(
       DEMO_SPEC_PATH,
       DEMO_BASE_URL,
-      "Failed to load the demo API. Please try again.",
+      "Failed to load the demo spec. Try again in a moment.",
     );
 
   return (
-    <div className="min-h-screen bg-[#05070d]">
+    <div className="min-h-screen bg-paper text-ink">
       {/* Nav */}
-      <header className="sticky top-0 z-20 border-b border-white/5 bg-[#05070d]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-line bg-paper/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <Logo />
-          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-400 sm:flex">
-            <a href="#features" className="transition hover:text-white">
+          <nav className="flex items-center gap-1 sm:gap-2">
+            <a href="#features" className="btn btn-quiet hidden sm:inline-flex">
               Features
             </a>
-            <a href="#how-it-works" className="transition hover:text-white">
+            <a
+              href="#how-it-works"
+              className="btn btn-quiet hidden sm:inline-flex"
+            >
               How it works
             </a>
+            <a href="#get-started" className="btn btn-secondary ml-1">
+              Open a spec
+            </a>
           </nav>
-          <a
-            href="#get-started"
-            className="rounded-lg bg-linear-to-r from-blue-500 to-violet-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_0_20px_-6px_rgba(99,102,241,0.7)] transition hover:brightness-110"
-          >
-            Get Started
-          </a>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        {/* decorative grid + glow */}
-        <div className="pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:44px_44px]" />
-        </div>
-        <div className="pointer-events-none absolute left-1/2 top-[-6rem] h-72 w-[36rem] -translate-x-1/2 rounded-full bg-blue-600/20 blur-3xl" />
-        <div className="pointer-events-none absolute right-[-4rem] top-24 h-56 w-56 rounded-full bg-violet-600/20 blur-3xl" />
-
-        <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
-          <div className="mx-auto max-w-2xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-              100% client-side · no signup required
-            </span>
-
-            <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-6xl">
-              Explore any REST API
-              <br />
-              <span className="bg-linear-to-r from-blue-400 via-cyan-300 to-violet-400 bg-clip-text text-transparent">
-                in seconds
-              </span>
+      <section className="border-b border-line">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-16">
+          <div>
+            <h1 className="max-w-[15ch] text-[2.5rem] font-semibold leading-[1.05] tracking-[-0.025em] text-ink sm:text-[3.5rem]">
+              Try any API straight from its spec.
             </h1>
 
-            <p className="mx-auto mt-5 max-w-xl text-base text-slate-400 sm:text-lg">
-              Apirra turns an OpenAPI or Swagger spec into a live, interactive
-              workspace — browse every endpoint, send real requests, and inspect
-              responses without leaving your browser.
+            <p className="mt-5 max-w-[34rem] text-[17px] leading-relaxed text-muted">
+              Paste the URL of an OpenAPI or Swagger document. Apirra lists
+              every endpoint and lets you call them from this browser tab, with
+              no install and no account.
             </p>
-          </div>
 
-          {/* Main Card */}
-          <div
-            id="get-started"
-            className="relative mx-auto mt-10 w-full max-w-xl scroll-mt-24"
-          >
-            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] shadow-2xl shadow-black/40 backdrop-blur-xl">
-              <div className="h-1 bg-linear-to-r from-blue-500 via-cyan-400 to-violet-500" />
+            <div
+              id="get-started"
+              className="mt-9 max-w-[34rem] scroll-mt-24 space-y-3"
+            >
+              <label
+                htmlFor="spec-url"
+                className="block text-sm font-medium text-ink"
+              >
+                Spec URL
+              </label>
 
-              <div className="space-y-5 p-5 sm:p-8">
-                {/* Input section */}
-                <div>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="flex min-w-0 flex-1 items-stretch">
+                  <span className="flex items-center rounded-l-md border border-r-0 border-line-strong bg-sunken px-3 font-mono text-xs font-semibold text-get">
+                    GET
+                  </span>
                   <UserInput
-                    label="OpenAPI Specification URL"
+                    id="spec-url"
+                    label=""
                     placeholder="http://localhost:8081/v3/api-docs"
                     value={baseUrl}
                     onChange={(e) => setBaseUrlState(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleLoad()}
+                    className="rounded-l-none py-2.5 font-mono text-[13px]"
+                    spellCheck={false}
+                    autoComplete="url"
                   />
-
-                  <p className="mt-2 text-xs text-slate-500">
-                    Example: http://localhost:8081/v3/api-docs
-                  </p>
                 </div>
 
-                {/* Error */}
-                {error && (
-                  <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
-                    <p className="text-sm text-red-300">{error}</p>
-                  </div>
-                )}
-
-                {/* Button */}
                 <button
                   onClick={handleLoad}
                   disabled={loading || !baseUrl.trim()}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-r from-blue-500 to-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="btn btn-primary px-5 py-2.5"
                 >
                   {loading ? (
                     <>
-                      <svg
-                        className="h-4 w-4 animate-spin"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                        />
-                      </svg>
-                      Connecting…
+                      <Spinner />
+                      Loading…
                     </>
                   ) : (
-                    "Load API Explorer"
+                    "Load API explorer"
                   )}
                 </button>
-
-                {/* Demo divider */}
-                <div className="relative py-1">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10" />
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="bg-[#0b0f1a] px-3 text-[11px] font-medium uppercase tracking-wider text-slate-500">
-                      or
-                    </span>
-                  </div>
-                </div>
-
-                {/* No environment? Try the demo spec */}
-                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-                  <p className="text-sm font-medium text-white">
-                    Don&apos;t have an API to test with?
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Launch a ready-made demo spec that exercises GET, POST, PUT
-                    and DELETE against a public sandbox API — safe to experiment
-                    with freely, no backend of your own required.
-                  </p>
-
-                  <button
-                    onClick={handleLoadDemo}
-                    disabled={loading}
-                    className="mt-3 w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {loading ? "Connecting…" : "Try the Demo API"}
-                  </button>
-                </div>
               </div>
-            </div>
 
-            <p className="mt-4 text-center text-xs text-slate-500">
-              Supports OpenAPI 3.x • Swagger 2.x • JSON endpoints
-            </p>
+              <p className="text-[13px] text-faint">
+                Usually ends in{" "}
+                <code className="font-mono text-muted">/v3/api-docs</code>,{" "}
+                <code className="font-mono text-muted">/openapi.json</code> or{" "}
+                <code className="font-mono text-muted">/swagger.json</code>.
+              </p>
+
+              {error && (
+                <p
+                  role="alert"
+                  className="rounded-md border border-danger/25 bg-danger/5 px-3 py-2.5 text-sm text-danger"
+                >
+                  {error}
+                </p>
+              )}
+
+              <p className="pt-3 text-sm leading-relaxed text-muted">
+                No API to point at?{" "}
+                <button
+                  onClick={handleLoadDemo}
+                  disabled={loading}
+                  className="font-medium text-accent underline decoration-accent/30 underline-offset-4 transition hover:decoration-accent disabled:opacity-50"
+                >
+                  Try the demo API
+                </button>
+                , a small JSONPlaceholder spec with GET, POST, PUT and DELETE
+                endpoints you can't break.
+              </p>
+            </div>
           </div>
+
+          <ExplorerPreview />
         </div>
       </section>
 
       {/* Features */}
-      <section
-        id="features"
-        className="scroll-mt-16 border-t border-white/5 py-20"
-      >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="mx-auto max-w-xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-white">
-              Everything you need to test an API
+      <section id="features" className="scroll-mt-16 border-b border-line">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[18rem_1fr] lg:gap-16">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-[-0.015em] text-ink sm:text-[1.75rem]">
+              What it does
             </h2>
-            <p className="mt-3 text-sm text-slate-400 sm:text-base">
-              No Postman collection to import, no Docker container to run. Just
-              a spec URL and a browser tab.
+            <p className="mt-3 max-w-xs text-[15px] leading-relaxed text-muted">
+              The parts of Postman you actually reach for when you just want
+              to poke an endpoint.
             </p>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <dl className="grid gap-x-12 gap-y-8 sm:grid-cols-2">
             {FEATURES.map((feature) => (
-              <FeatureCard key={feature.title} {...feature} />
+              <div key={feature.title} className="border-t border-line pt-4">
+                <dt className="text-[15px] font-semibold text-ink">
+                  {feature.title}
+                </dt>
+                <dd className="mt-1.5 text-[15px] leading-relaxed text-muted">
+                  {feature.description}
+                </dd>
+              </div>
             ))}
-          </div>
+          </dl>
         </div>
       </section>
 
       {/* How it works */}
-      <section
-        id="how-it-works"
-        className="scroll-mt-16 border-t border-white/5 py-20"
-      >
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="mx-auto max-w-xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-white">
+      <section id="how-it-works" className="scroll-mt-16 border-b border-line">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[18rem_1fr] lg:gap-16">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-[-0.015em] text-ink sm:text-[1.75rem]">
               How it works
             </h2>
-            <p className="mt-3 text-sm text-slate-400 sm:text-base">
-              From spec to your first request in three steps.
-            </p>
-          </div>
-
-          <div className="relative mt-16">
-            <div className="absolute left-0 right-0 top-5 hidden h-px bg-white/10 sm:block" />
-            <div className="relative grid grid-cols-1 gap-10 sm:grid-cols-3">
-              {STEPS.map((item) => (
-                <div key={item.step} className="text-center sm:text-left">
-                  <div className="relative z-10 mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#05070d] ring-1 ring-white/10 sm:mx-0">
-                    <span className="flex h-full w-full items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-violet-500 text-sm font-bold text-white">
-                      {item.step}
-                    </span>
-                  </div>
-                  <h3 className="mt-4 text-base font-semibold text-white">
-                    {item.title}
-                  </h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
-                    {item.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-12 text-center">
             <a
               href="#get-started"
-              className="inline-flex items-center justify-center rounded-xl bg-linear-to-r from-blue-500 to-violet-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:brightness-110"
+              className="btn btn-primary mt-6 hidden lg:inline-flex"
             >
-              Start exploring your API
+              Open a spec
             </a>
           </div>
+
+          <ol className="grid gap-8 sm:grid-cols-3 sm:gap-10">
+            {STEPS.map((item, i) => (
+              <li key={item.title}>
+                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-line-strong text-sm font-medium text-ink">
+                  {i + 1}
+                </span>
+                <h3 className="mt-4 text-[15px] font-semibold text-ink">
+                  {item.title}
+                </h3>
+                <p className="mt-1.5 text-[15px] leading-relaxed text-muted">
+                  {item.description}
+                </p>
+              </li>
+            ))}
+          </ol>
+
+          <a
+            href="#get-started"
+            className="btn btn-primary justify-self-start lg:hidden"
+          >
+            Open a spec
+          </a>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5">
-        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Product branding */}
-            <div className="lg:col-span-2">
-              <Logo />
-              <p className="mt-4 max-w-sm text-sm text-slate-400">
-                A fast, client-side OpenAPI &amp; Swagger explorer — paste a
-                spec, browse every endpoint, and try it out instantly. No
-                install, no backend, no signup.
-              </p>
-              <p className="mt-5 text-xs text-slate-500">
-                Supports OpenAPI 3.x &bull; Swagger 2.x &bull; JSON endpoints
-              </p>
-            </div>
-
-            {/* Product nav */}
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-300">
-                Product
-              </h3>
-              <ul className="mt-4 space-y-2.5 text-sm text-slate-400">
-                <li>
-                  <a href="#get-started" className="transition hover:text-white">
-                    Get Started
-                  </a>
-                </li>
-                <li>
-                  <a href="#features" className="transition hover:text-white">
-                    Features
-                  </a>
-                </li>
-                <li>
-                  <a href="#how-it-works" className="transition hover:text-white">
-                    How it works
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Author */}
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-300">
-                Author
-              </h3>
-              <ul className="mt-4 space-y-2.5 text-sm text-slate-400">
-                <li>
-                  <a
-                    href="https://malindasampath.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 transition hover:text-white"
-                  >
-                    Portfolio
-                    <svg
-                      className="h-3.5 w-3.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M14 5h5m0 0v5m0-5L10 14M6 5H5a1 1 0 00-1 1v13a1 1 0 001 1h13a1 1 0 001-1v-1"
-                      />
-                    </svg>
-                  </a>
-                </li>
-              </ul>
-            </div>
+      <footer>
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div className="flex items-center gap-4">
+            <Logo />
+            <span className="text-faint">
+              &copy; {new Date().getFullYear()}
+            </span>
           </div>
 
-          {/* Bottom bar */}
-          <div className="mt-12 flex flex-col items-center gap-3 border-t border-white/5 pt-6 text-xs text-slate-500 sm:flex-row sm:justify-between">
-            <p>&copy; {new Date().getFullYear()} Apirra. All rights reserved.</p>
-            <p>
-              Designed &amp; built by{" "}
-              <a
-                href="https://malindasampath.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-slate-300 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white/40"
-              >
-                Malinda Sampath
-              </a>
-            </p>
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="transition hover:text-white"
+          <p>
+            Made by{" "}
+            <a
+              href="https://malindasampath.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-ink underline decoration-line-strong underline-offset-4 transition hover:decoration-ink"
             >
-              Back to top &uarr;
-            </button>
-          </div>
+              Malinda Sampath
+            </a>
+          </p>
+
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="self-start text-muted transition hover:text-ink sm:self-auto"
+          >
+            Back to top
+          </button>
         </div>
       </footer>
     </div>

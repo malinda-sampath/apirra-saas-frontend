@@ -218,48 +218,49 @@ const PutMethod: React.FC<PutMethodProps> = ({
   // ==================== Render ==================
 
   return (
-    <div className="mx-auto w-full max-w-auto space-y-4 p-3 sm:space-y-6 sm:p-4">
+    <div className="mx-auto w-full max-w-4xl space-y-10 px-4 py-6 sm:px-8 sm:py-8">
       {/* Header */}
-      <div className="rounded-xl border border-white/10 bg-linear-to-br from-white/[0.05] to-white/[0.01] p-4 sm:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 space-y-2 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
-              <span className="method-pill method-pill-put rounded-lg px-3 py-1 text-xs tracking-widest">
-                PUT
-              </span>
-              <code className="min-w-0 flex-1 break-all font-mono text-sm text-white">
-                {baseUrl}
-                {endpoint.path}
-              </code>
-            </div>
-            {endpoint.summary && (
-              <p className="text-sm text-slate-400">{endpoint.summary}</p>
-            )}
-          </div>
+      <header className="space-y-2 border-b border-line pb-6">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <span className="font-mono text-sm font-semibold text-put">
+            PUT
+          </span>
+          <h1 className="min-w-0 break-all font-mono text-lg font-medium tracking-[-0.01em] text-ink sm:text-xl">
+            {endpoint.path}
+          </h1>
         </div>
-      </div>
+        {endpoint.summary && (
+          <p className="text-[15px] leading-relaxed text-muted">
+            {endpoint.summary}
+          </p>
+        )}
+        <p className="break-all font-mono text-xs text-faint">
+          {baseUrl}
+          {endpoint.path}
+        </p>
+      </header>
 
       {/* Parameters Section */}
       {params.length > 0 && (
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Parameters</h2>
+        <div>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-ink">Parameters</h2>
             <button
               onClick={handleReset}
-              className="rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
+              className="btn btn-quiet text-[13px]"
               disabled={
                 isRunning || loading || Object.keys(paramValues).length === 0
               }
               aria-label="Clear all parameters"
             >
-              Clear All
+              Clear all
             </button>
           </div>
 
           <div className="space-y-6">
             {groupedParams.path.length > 0 && (
               <ParameterSection
-                title="Path Parameters"
+                title="Path parameters"
                 params={groupedParams.path}
                 paramValues={paramValues}
                 onParamChange={handleParamChange}
@@ -269,7 +270,7 @@ const PutMethod: React.FC<PutMethodProps> = ({
             )}
             {groupedParams.query.length > 0 && (
               <ParameterSection
-                title="Query Parameters"
+                title="Query parameters"
                 params={groupedParams.query}
                 paramValues={paramValues}
                 onParamChange={handleParamChange}
@@ -302,9 +303,9 @@ const PutMethod: React.FC<PutMethodProps> = ({
       )}
 
       {/* Request Body Section */}
-      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
-        <h2 className="mb-4 text-lg font-semibold text-white">
-          Request Body
+      <div>
+        <h2 className="mb-3 text-base font-semibold text-ink">
+          Request body
         </h2>
         <textarea
           value={requestBody}
@@ -312,37 +313,34 @@ const PutMethod: React.FC<PutMethodProps> = ({
           placeholder={'{\n  "key": "value"\n}'}
           rows={10}
           disabled={isRunning || loading}
-          className="min-h-[320px] w-full resize-y overflow-auto rounded-lg border border-white/10 bg-white/5 p-4 font-mono text-sm text-white transition-all placeholder:text-slate-500 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-60"
+          className="field min-h-[320px] resize-y overflow-auto p-4 font-mono text-[13px] leading-relaxed"
           aria-label="Request body JSON"
         />
       </div>
 
       {/* Responses Documentation */}
       {Object.keys(responses).length > 0 && (
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
-          <h2 className="mb-4 text-lg font-semibold text-white">
-            Response Status Codes
+        <div>
+          <h2 className="mb-3 text-base font-semibold text-ink">
+            Responses
           </h2>
-          <div className="space-y-2">
+          <div className="divide-y divide-line border-t border-line">
             {Object.entries(responses).map(
               ([code, resp]: [string, OpenAPIV3.ResponseObject]) => {
                 const isSuccess = code.startsWith("2");
                 return (
                   <div
                     key={code}
-                    className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-3"
+                    className="flex items-baseline gap-4 py-2.5"
                   >
                     <span
-                      className="rounded px-2.5 py-0.5 text-xs font-bold text-white"
-                      style={{
-                        background: isSuccess
-                          ? "var(--color-put, #eab308)"
-                          : "var(--color-delete, #ef4444)",
-                      }}
+                      className={`w-10 shrink-0 font-mono text-[13px] font-semibold ${
+                        isSuccess ? "text-accent" : "text-danger"
+                      }`}
                     >
                       {code}
                     </span>
-                    <p className="text-sm text-slate-300">
+                    <p className="text-sm text-ink-soft">
                       {resp.description ?? "No description"}
                     </p>
                   </div>
@@ -354,12 +352,12 @@ const PutMethod: React.FC<PutMethodProps> = ({
       )}
 
       {/* Request Execution Section */}
-      <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
+      <div className="space-y-4 border-t border-line pt-8">
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             onClick={handleTry}
             disabled={loading || isRunning}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/20 transition hover:bg-amber-500 disabled:opacity-60 sm:flex-none"
+            className="btn btn-primary px-5"
             aria-label={isRunning ? "Sending request" : "Send request"}
           >
             {loading || isRunning ? (
@@ -386,7 +384,7 @@ const PutMethod: React.FC<PutMethodProps> = ({
                 Sending…
               </>
             ) : (
-              <>▶ Send Request</>
+              <>Send request</>
             )}
           </button>
         </div>

@@ -121,11 +121,16 @@ src/
   `Object.fromEntries(...).filter(v !== undefined && v !== "")`.
 - **Toasts**: use the local `addToast(message, type)` / `removeToast(id)`
   pattern already in each method component — there's no global toast store.
-- **Styling**: Tailwind utility classes inline, with a small set of shared
-  CSS custom properties for method colors (`--color-get`, `--color-post`,
-  etc. in `index.css`) and a `.method-pill-*` component class used by
-  `Sidebar`. New method-specific UI should reuse these variables rather than
-  hardcoding new colors.
+- **Styling**: light theme. Design tokens live in `index.css` under
+  Tailwind v4's `@theme`, so each is also a utility: surfaces (`paper`,
+  `surface`, `sunken`), text (`ink`, `ink-soft`, `muted`, `faint`), rules
+  (`line`, `line-strong`), `accent` (also used for 2xx), `danger`, and one
+  color per HTTP method (`--color-get`, `--color-post`, … → `text-get`,
+  `bg-post/10`). Fonts: Schibsted Grotesk (UI) and JetBrains Mono (code
+  only), loaded in `index.html`. Shared component classes: `.panel`,
+  `.field`, `.btn` + `.btn-primary`/`-secondary`/`-quiet`/`-danger`,
+  `.code-block`, and `.method-pill-*`. Reuse these rather than hardcoding
+  colors; avoid gradients, glows, and ALL-CAPS labels.
 - **Reset on endpoint change**: every method component resets its local
   state via a `useEffect` keyed on `endpoint.path` (wrapped in a
   `setTimeout(…, 0)` to dodge a render-order issue). Preserve this when

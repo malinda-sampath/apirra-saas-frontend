@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { OpenAPIV3 } from "openapi-types";
 import type { OpenAPISpec } from "../types";
 import { httpMethods } from "../types";
+import { highlightJson } from "../utils/highlightJson";
 
 const METHOD_STYLES: Record<string, string> = {
   get: "method-pill method-pill-get",
@@ -108,10 +109,10 @@ const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
       <div
         onClick={onClose}
         aria-hidden="true"
-        className="absolute inset-0 bg-ink/40"
+        className="absolute inset-0 bg-black/45"
       />
 
-      <div className="relative flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-2xl shadow-ink/25">
+      <div className="relative flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-2xl shadow-black/30">
         {/* HEADER */}
         <div className="flex items-start justify-between gap-4 px-5 pb-3 pt-5 sm:px-6">
           <div className="min-w-0">
@@ -135,6 +136,7 @@ const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
           <button
             onClick={onClose}
             aria-label="Close spec viewer"
+            autoFocus
             className="btn btn-quiet h-8 w-8 shrink-0 p-0"
           >
             <svg
@@ -252,7 +254,9 @@ const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
               ))}
             </div>
           ) : (
-            <pre className="code-block overflow-auto">{rawJson}</pre>
+            <pre className="code-block overflow-auto">
+              {highlightJson(rawJson)}
+            </pre>
           )}
         </div>
       </div>

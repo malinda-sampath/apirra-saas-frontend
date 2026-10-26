@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { OpenAPIV3 } from "openapi-types";
 import ParameterSection from "../ParameterSection";
 import CurlGenerator from "../CurlGenerator";
+import RequestBar from "../RequestBar";
 import ResponseDisplay from "../ResponseDisplay";
 import RequestHistory from "../RequestHistory";
 import type { HistoryItem } from "../RequestHistory";
@@ -201,152 +202,51 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
   // ==================== Render ==================
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-10 px-4 py-6 sm:px-8 sm:py-8">
+    <div className="mx-auto w-full max-w-5xl px-4 pb-16 sm:px-8">
       {/* Header */}
-      <header className="space-y-2 border-b border-line pb-6">
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="font-mono text-sm font-semibold text-delete">
-            DELETE
-          </span>
-          <h1 className="min-w-0 break-all font-mono text-lg font-medium tracking-[-0.01em] text-ink sm:text-xl">
-            {endpoint.path}
-          </h1>
-        </div>
-        {endpoint.summary && (
-          <p className="text-[15px] leading-relaxed text-muted">
-            {endpoint.summary}
+      <header className="pb-5 pt-6 sm:pt-8">
+        <h1 className="text-2xl font-semibold tracking-[-0.015em] text-ink">
+          {endpoint.summary || endpoint.path}
+        </h1>
+        {endpoint.description && endpoint.description !== endpoint.summary && (
+          <p className="mt-2 max-w-[70ch] text-[15px] leading-relaxed text-muted">
+            {endpoint.description}
           </p>
         )}
-        <p className="break-all font-mono text-xs text-faint">
-          {baseUrl}
-          {endpoint.path}
-        </p>
       </header>
 
-      {/* Parameters Section */}
-      {params.length > 0 && (
-        <div>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-ink">Parameters</h2>
-            <button
-              onClick={handleReset}
-              className="btn btn-quiet text-[13px]"
-              disabled={
-                isRunning || loading || Object.keys(paramValues).length === 0
-              }
-              aria-label="Clear all parameters"
-            >
-              Clear all
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            {groupedParams.path.length > 0 && (
-              <ParameterSection
-                title="Path parameters"
-                params={groupedParams.path}
-                paramValues={paramValues}
-                onParamChange={handleParamChange}
-                disabled={isRunning}
-                loading={loading}
-              />
-            )}
-            {groupedParams.query.length > 0 && (
-              <ParameterSection
-                title="Query parameters"
-                params={groupedParams.query}
-                paramValues={paramValues}
-                onParamChange={handleParamChange}
-                disabled={isRunning}
-                loading={loading}
-              />
-            )}
-            {groupedParams.header.length > 0 && (
-              <ParameterSection
-                title="Headers"
-                params={groupedParams.header}
-                paramValues={paramValues}
-                onParamChange={handleParamChange}
-                disabled={isRunning}
-                loading={loading}
-              />
-            )}
-            {groupedParams.cookie.length > 0 && (
-              <ParameterSection
-                title="Cookies"
-                params={groupedParams.cookie}
-                paramValues={paramValues}
-                onParamChange={handleParamChange}
-                disabled={isRunning}
-                loading={loading}
-              />
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Responses Documentation */}
-      {Object.keys(responses).length > 0 && (
-        <div>
-          <h2 className="mb-3 text-base font-semibold text-ink">
-            Responses
-          </h2>
-          <div className="divide-y divide-line border-t border-line">
-            {Object.entries(responses).map(
-              ([code, resp]: [string, OpenAPIV3.ResponseObject]) => {
-                const isSuccess = code.startsWith("2");
-                return (
-                  <div
-                    key={code}
-                    className="flex items-baseline gap-4 py-2.5"
-                  >
-                    <span
-                      className={`w-10 shrink-0 font-mono text-[13px] font-semibold ${
-                        isSuccess ? "text-accent" : "text-danger"
-                      }`}
-                    >
-                      {code}
-                    </span>
-                    <p className="text-sm text-ink-soft">
-                      {resp.description ?? "No description"}
-                    </p>
-                  </div>
-                );
-              },
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Request Execution Section */}
-      <div className="space-y-4 border-t border-line pt-8">
-        {confirmArmed && (
-          <div role="alert"
-            className="rounded-md border border-danger/25 bg-danger/5 px-4 py-2.5 text-sm text-danger">
-            This sends a real DELETE to your API. Press{" "}
-            <span className="font-semibold">Confirm delete</span> to go ahead.
-          </div>
-        )}
-
-        <div className="flex flex-col gap-3 sm:flex-row">
+      {/* Request bar - stays visible while scrolling */}
+      <div className="sticky top-0 z-10 -mx-4 border-b border-line bg-paper/95 px-4 py-3 backdrop-blur sm:-mx-8 sm:px-8">
+        <RequestBar
+          method={endpoint.method}
+          baseUrl={baseUrl}
+          path={endpoint.path}
+          paramValues={paramValues}
+          queryParams={queryParams}
+        >
           <button
-            onClick={handleTry}
-            disabled={loading || isRunning}
-            className={`btn btn-danger px-5 ${confirmArmed ? "bg-[#8f2a20]" : ""}`}
-            aria-label={
-              isRunning
-                ? "Sending request"
-                : confirmArmed
-                  ? "Confirm delete"
-                  : "Send request"
-            }
-          >
-            {loading || isRunning ? (
-              <>
-                <svg
+              onClick={handleTry}
+              disabled={loading || isRunning}
+              className={`btn btn-danger flex-1 px-5 py-2.5 sm:min-w-28 sm:flex-none ${
+                confirmArmed
+                  ? "ring-2 ring-danger/30 ring-offset-2 ring-offset-paper"
+                  : ""
+              }`}
+              aria-label={
+                isRunning
+                  ? "Sending request"
+                  : confirmArmed
+                    ? "Confirm delete"
+                    : "Send request"
+              }
+            >
+              {loading || isRunning ? (
+                <>
+                  <svg
                   className="h-4 w-4 animate-spin"
                   viewBox="0 0 24 24"
                   fill="none"
+                  aria-hidden="true"
                 >
                   <circle
                     className="opacity-25"
@@ -362,54 +262,171 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                   />
                 </svg>
-                Sending…
-              </>
-            ) : confirmArmed ? (
-              <>Confirm delete</>
-            ) : (
-              <>Send request</>
-            )}
-          </button>
-
-          {confirmArmed && !isRunning && (
-            <button
-              onClick={() => setConfirmArmed(false)}
-              className="btn btn-secondary px-5"
-            >
-              Cancel
+                  Sending…
+                </>
+              ) : confirmArmed ? (
+                <>Confirm delete</>
+              ) : (
+                <>Send</>
+              )}
             </button>
-          )}
-        </div>
 
-        {/* cURL Generator Component */}
-        <CurlGenerator
-          method={endpoint.method}
-          baseUrl={baseUrl}
-          path={finalPathForCurl}
-          queryParams={queryParams}
-          headers={{}}
-          onCopy={copyToClipboard}
-          isVisible={showCurl}
-          onToggle={() => setShowCurl(!showCurl)}
-        />
+            {confirmArmed && !isRunning && (
+              <button
+                onClick={() => setConfirmArmed(false)}
+                className="btn btn-secondary px-4 py-2.5"
+              >
+                Cancel
+              </button>
+            )}
+        </RequestBar>
 
-        {/* Response Display Component */}
-        <ResponseDisplay
-          response={response}
-          baseUrl={baseUrl}
-          path={finalPathForCurl}
-          paramValues={paramValues}
-          onCopy={copyToClipboard}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
+        {confirmArmed && (
+          <p
+            role="alert"
+            className="mt-2.5 rounded-md border border-danger/25 bg-danger/5 px-3 py-2 text-sm text-danger"
+          >
+            This sends a real DELETE to your API. Press{" "}
+            <span className="font-semibold">Confirm delete</span> to go ahead.
+          </p>
+        )}
       </div>
 
-      {/* Request History Component */}
-      <RequestHistory
-        history={requestHistory}
-        onSelectRequest={handleRestoreFromHistory}
-      />
+      <div className="mt-8 space-y-10">
+        {/* Parameters Section */}
+        {params.length > 0 ? (
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-base font-semibold text-ink">Parameters</h2>
+              <button
+                onClick={handleReset}
+                className="btn btn-quiet text-[13px]"
+                disabled={
+                  isRunning || loading || Object.keys(paramValues).length === 0
+                }
+                aria-label="Clear all parameters"
+              >
+                Clear all
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {groupedParams.path.length > 0 && (
+                <ParameterSection
+                  title="Path parameters"
+                  params={groupedParams.path}
+                  paramValues={paramValues}
+                  onParamChange={handleParamChange}
+                  disabled={isRunning}
+                  loading={loading}
+                />
+              )}
+              {groupedParams.query.length > 0 && (
+                <ParameterSection
+                  title="Query parameters"
+                  params={groupedParams.query}
+                  paramValues={paramValues}
+                  onParamChange={handleParamChange}
+                  disabled={isRunning}
+                  loading={loading}
+                />
+              )}
+              {groupedParams.header.length > 0 && (
+                <ParameterSection
+                  title="Headers"
+                  params={groupedParams.header}
+                  paramValues={paramValues}
+                  onParamChange={handleParamChange}
+                  disabled={isRunning}
+                  loading={loading}
+                />
+              )}
+              {groupedParams.cookie.length > 0 && (
+                <ParameterSection
+                  title="Cookies"
+                  params={groupedParams.cookie}
+                  paramValues={paramValues}
+                  onParamChange={handleParamChange}
+                  disabled={isRunning}
+                  loading={loading}
+                />
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-muted">
+            This endpoint takes no parameters. Press Send to call it.
+          </p>
+        )}
+
+        {/* Response */}
+        <div>
+          <h2 className="mb-3 text-base font-semibold text-ink">Response</h2>
+          <ResponseDisplay
+            response={response}
+            baseUrl={baseUrl}
+            path={finalPathForCurl}
+            paramValues={paramValues}
+            onCopy={copyToClipboard}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            isLoading={isRunning}
+          />
+
+          {/* cURL Generator Component */}
+          <div className="mt-4">
+            <CurlGenerator
+              method={endpoint.method}
+              baseUrl={baseUrl}
+              path={finalPathForCurl}
+              queryParams={queryParams}
+              headers={{}}
+              onCopy={copyToClipboard}
+              isVisible={showCurl}
+              onToggle={() => setShowCurl(!showCurl)}
+            />
+          </div>
+        </div>
+
+        {/* Responses Documentation */}
+        {Object.keys(responses).length > 0 && (
+          <div>
+            <h2 className="mb-3 text-base font-semibold text-ink">
+              Possible responses
+            </h2>
+            <div className="panel divide-y divide-line">
+              {Object.entries(responses).map(
+                ([code, resp]: [string, OpenAPIV3.ResponseObject]) => {
+                  const isSuccess = code.startsWith("2");
+                  return (
+                    <div
+                      key={code}
+                      className="flex items-baseline gap-4 px-4 py-2.5"
+                    >
+                      <span
+                        className={`w-10 shrink-0 font-mono text-[13px] font-semibold ${
+                          isSuccess ? "text-accent" : "text-danger"
+                        }`}
+                      >
+                        {code}
+                      </span>
+                      <p className="text-sm text-ink-soft">
+                        {resp.description ?? "No description"}
+                      </p>
+                    </div>
+                  );
+                },
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Request History Component */}
+        <RequestHistory
+          history={requestHistory}
+          onSelectRequest={handleRestoreFromHistory}
+        />
+      </div>
 
       {/* Toast Container Component */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />

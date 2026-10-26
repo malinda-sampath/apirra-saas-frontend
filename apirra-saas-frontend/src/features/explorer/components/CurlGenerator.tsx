@@ -114,15 +114,15 @@ const CurlGenerator: React.FC<CurlGeneratorProps> = ({
       {isVisible && (
         <div
           id="curl-command-section"
-          className="overflow-hidden rounded-lg bg-ink text-paper"
+          className="overflow-hidden rounded-lg bg-terminal text-terminal-text"
         >
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
-            <p className="text-xs text-paper/60">
+            <p className="text-xs text-terminal-text/60">
               Same request, ready for a terminal
             </p>
             <button
               onClick={() => onCopy(curlCommand)}
-              className="rounded px-2 py-1 text-xs font-medium text-paper/80 transition hover:bg-white/10 hover:text-paper"
+              className="rounded px-2 py-1 text-xs font-medium text-terminal-text/80 transition hover:bg-white/10 hover:text-terminal-text"
               aria-label="Copy cURL command"
             >
               Copy

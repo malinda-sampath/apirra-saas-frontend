@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { fetchOpenApiSpec } from "../../features/explorer/api/openApiService";
 import { parseOpenApi } from "../../features/explorer/utils/openApiParser";
 import type { ParsedApiMethod } from "../../features/explorer/types";
+import { highlightJson } from "../../features/explorer/utils/highlightJson";
 import UserInput from "../../shared/components/UserInput";
 import Logo from "../../shared/components/Logo";
 
@@ -51,7 +52,7 @@ const STEPS = [
   {
     title: "Paste a spec URL",
     description:
-      "Any reachable OpenAPI 3 or Swagger 2 document in JSON. For Spring apps that's usually /v3/api-docs.",
+      "Any reachable OpenAPI 3 document in JSON. For Spring Boot apps that's usually /v3/api-docs.",
   },
   {
     title: "Pick an endpoint",
@@ -62,6 +63,34 @@ const STEPS = [
     title: "Send it",
     description:
       "Fill in the parameters, send the request, and read the response right under the form.",
+  },
+];
+
+const FAQS = [
+  {
+    question: "Why won't my spec load?",
+    answer:
+      "Almost always CORS. Your browser only lets this page read the spec if the server allows requests from this site. Enable CORS for this origin on your API (in Spring Boot, a @CrossOrigin annotation or a global CORS config), or try the spec URL in a new tab to make sure it actually returns JSON.",
+  },
+  {
+    question: "Can I use it with an API running on localhost?",
+    answer:
+      "Yes. Requests are sent by your own browser, so localhost and anything on your network work, as long as that server allows CORS from this site.",
+  },
+  {
+    question: "Is my data sent anywhere?",
+    answer:
+      "No. The spec is fetched and parsed in this tab, and requests go straight from your browser to your API. Nothing is stored, and closing the tab clears it.",
+  },
+  {
+    question: "Which spec formats are supported?",
+    answer:
+      "OpenAPI 3.x in JSON. Older Swagger 2.0 files may list their endpoints, but request bodies won't be pre-filled. YAML isn't supported yet.",
+  },
+  {
+    question: "Which HTTP methods can I send?",
+    answer:
+      "GET, POST, PUT and DELETE. PATCH, HEAD and OPTIONS endpoints still appear in the list, but they can't be sent yet. DELETE asks you to confirm before it runs.",
   },
 ];
 
@@ -154,7 +183,7 @@ const ExplorerPreview = () => (
         </div>
         <p className="mt-1 text-xs text-faint">Came back in 84 ms</p>
         <pre className="code-block mt-3 overflow-x-auto text-[12px] leading-relaxed">
-          {PREVIEW_RESPONSE}
+          {highlightJson(PREVIEW_RESPONSE)}
         </pre>
       </div>
     </div>
@@ -266,6 +295,9 @@ const HomePage = () => {
               className="btn btn-quiet hidden sm:inline-flex"
             >
               How it works
+            </a>
+            <a href="#faq" className="btn btn-quiet hidden sm:inline-flex">
+              FAQ
             </a>
             <a href="#get-started" className="btn btn-secondary ml-1">
               Open a spec
@@ -433,6 +465,47 @@ const HomePage = () => {
           >
             Open a spec
           </a>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="scroll-mt-16 border-b border-line">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[18rem_1fr] lg:gap-16">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-[-0.015em] text-ink sm:text-[1.75rem]">
+              Questions
+            </h2>
+            <p className="mt-3 max-w-xs text-[15px] leading-relaxed text-muted">
+              The things people usually run into the first time.
+            </p>
+          </div>
+
+          <div className="divide-y divide-line border-y border-line">
+            {FAQS.map((item) => (
+              <details key={item.question} className="group">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-4 text-[15px] font-medium text-ink hover:text-accent [&::-webkit-details-marker]:hidden">
+                  {item.question}
+                  <svg
+                    className="h-4 w-4 shrink-0 text-faint transition-transform group-open:rotate-45"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 5v14M5 12h14"
+                    />
+                  </svg>
+                </summary>
+                <p className="max-w-[65ch] pb-5 pr-10 text-[15px] leading-relaxed text-muted">
+                  {item.answer}
+                </p>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
 

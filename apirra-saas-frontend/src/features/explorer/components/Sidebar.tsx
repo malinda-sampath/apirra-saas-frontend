@@ -121,7 +121,7 @@ const Sidebar: React.FC<Props> = ({
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-line bg-surface shadow-xl shadow-ink/10 transition-transform duration-200 ease-out md:static md:z-auto md:w-80 md:translate-x-0 md:shadow-none ${
+      className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-line bg-surface shadow-xl shadow-black/15 transition-transform duration-200 ease-out md:static md:z-auto md:w-80 md:translate-x-0 md:shadow-none ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >

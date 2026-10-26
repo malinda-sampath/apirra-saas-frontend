@@ -24,11 +24,57 @@
   --color-put: #a86a12;
   --color-delete: #b23a2e;
   --color-patch: #6b4ba8;
+
+  /* JSON syntax colors for response/spec viewers. */
+  --color-syntax-key: #2d5bbf;
+  --color-syntax-string: #1f6f5c;
+  --color-syntax-number: #a86a12;
+  --color-syntax-literal: #6b4ba8;
+
+  /* Always-dark surface for terminal output (cURL). */
+  --color-terminal: #18211e;
+  --color-terminal-text: #e6ebe8;
 }
 
 @layer base {
   html {
     color-scheme: light;
+  }
+
+  /* Dark theme follows the OS setting. Only token values change, so every
+     utility built on them (bg-paper, text-ink, …) switches automatically. */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-paper: #121614;
+      --color-surface: #181d1b;
+      --color-sunken: #1f2522;
+      --color-ink: #e6ebe8;
+      --color-ink-soft: #c9d0cc;
+      --color-muted: #9aa39e;
+      --color-faint: #707974;
+      --color-line: #29302d;
+      --color-line-strong: #3a423e;
+      --color-accent: #5fc4a4;
+      --color-danger: #f08a7e;
+
+      --color-get: #5fc4a4;
+      --color-post: #86abf3;
+      --color-put: #e3b562;
+      --color-delete: #f08a7e;
+      --color-patch: #b9a0f0;
+
+      --color-syntax-key: #86abf3;
+      --color-syntax-string: #7fd1b5;
+      --color-syntax-number: #e3b562;
+      --color-syntax-literal: #b9a0f0;
+
+      --color-terminal: #0b0e0d;
+      --color-terminal-text: #dfe5e2;
+    }
+
+    html {
+      color-scheme: dark;
+    }
   }
 
   body {
@@ -174,10 +220,10 @@
 
   .btn-danger {
     background: var(--color-danger);
-    color: #fff;
+    color: var(--color-paper);
   }
   .btn-danger:hover:not(:disabled) {
-    background: #9a3026;
+    background: color-mix(in srgb, var(--color-danger) 85%, black);
   }
 
   .btn-secondary {

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { OpenAPIV3 } from "openapi-types";
 import type { OpenAPISpec } from "../types";
 import { httpMethods } from "../types";
+import { highlightJson } from "../utils/highlightJson";
 
 const METHOD_STYLES: Record<string, string> = {
   get: "method-pill method-pill-get",
@@ -91,6 +92,13 @@ const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
     URL.revokeObjectURL(url);
   };
 
+  const tabClass = (isActive: boolean) =>
+    `-mb-px border-b-2 px-1 pb-2.5 text-sm font-medium transition ${
+      isActive
+        ? "border-ink text-ink"
+        : "border-transparent text-muted hover:text-ink"
+    }`;
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6"
@@ -101,38 +109,25 @@ const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
       <div
         onClick={onClose}
         aria-hidden="true"
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/45"
       />
 
-      <div className="relative flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#05070d] shadow-2xl shadow-black/60">
+      <div className="relative flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-2xl shadow-black/30">
         {/* HEADER */}
-        <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6">
+        <div className="flex items-start justify-between gap-4 px-5 pb-3 pt-5 sm:px-6">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <svg
-                className="h-4 w-4 shrink-0 text-blue-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.75}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              <h2 className="truncate text-sm font-semibold text-white sm:text-base">
-                {spec.info?.title || "API Specification"}
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <h2 className="truncate text-lg font-semibold tracking-[-0.01em] text-ink">
+                {spec.info?.title || "API specification"}
               </h2>
               {spec.info?.version && (
-                <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-medium text-slate-400">
+                <span className="shrink-0 font-mono text-xs text-faint">
                   v{spec.info.version}
                 </span>
               )}
             </div>
             {spec.info?.description && (
-              <p className="mt-1 line-clamp-2 max-w-2xl text-xs text-slate-500">
+              <p className="mt-1 line-clamp-2 max-w-2xl text-sm text-muted">
                 {spec.info.description}
               </p>
             )}
@@ -141,7 +136,8 @@ const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
           <button
             onClick={onClose}
             aria-label="Close spec viewer"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-white/10 hover:text-white"
+            autoFocus
+            className="btn btn-quiet h-8 w-8 shrink-0 p-0"
           >
             <svg
               className="h-4 w-4"
@@ -160,16 +156,15 @@ const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
         </div>
 
         {/* TABS + ACTIONS */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-white/10 px-5 py-3 sm:px-6">
+        <div
+          role="tablist"
+          className="flex flex-wrap items-end gap-5 border-b border-line px-5 sm:px-6"
+        >
           <button
             onClick={() => setTab("overview")}
             role="tab"
             aria-selected={tab === "overview"}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition sm:text-sm ${
-              tab === "overview"
-                ? "bg-blue-500/15 text-blue-300"
-                : "text-slate-400 hover:text-white"
-            }`}
+            className={tabClass(tab === "overview")}
           >
             Overview
           </button>
@@ -177,25 +172,18 @@ const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
             onClick={() => setTab("raw")}
             role="tab"
             aria-selected={tab === "raw"}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition sm:text-sm ${
-              tab === "raw"
-                ? "bg-blue-500/15 text-blue-300"
-                : "text-slate-400 hover:text-white"
-            }`}
+            className={tabClass(tab === "raw")}
           >
             Raw JSON
           </button>
 
-          <div className="ml-auto flex items-center gap-2">
-            <button
-              onClick={handleCopy}
-              className="rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
-            >
-              {copied ? "Copied!" : "Copy JSON"}
+          <div className="mb-1.5 ml-auto flex items-center gap-1">
+            <button onClick={handleCopy} className="btn btn-quiet text-[13px]">
+              {copied ? "Copied" : "Copy JSON"}
             </button>
             <button
               onClick={handleDownload}
-              className="rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
+              className="btn btn-quiet text-[13px]"
             >
               Download
             </button>
@@ -203,19 +191,19 @@ const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
         </div>
 
         {/* BODY */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-6">
+        <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
           {tab === "overview" ? (
-            <div className="space-y-6">
+            <div className="space-y-7">
               {spec.servers && spec.servers.length > 0 && (
                 <div>
-                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+                  <h3 className="mb-2 text-sm font-medium text-muted">
                     Servers
-                  </p>
+                  </h3>
                   <div className="space-y-1.5">
                     {spec.servers.map((server, i) => (
                       <code
                         key={`${server.url}-${i}`}
-                        className="block break-all rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-xs text-slate-300"
+                        className="block break-all rounded-md bg-sunken px-3 py-2 font-mono text-[13px] text-ink"
                       >
                         {server.url}
                       </code>
@@ -224,7 +212,7 @@ const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
                 </div>
               )}
 
-              <p className="text-xs text-slate-500">
+              <p className="text-sm text-muted">
                 {endpointCount} endpoint{endpointCount === 1 ? "" : "s"} across{" "}
                 {Object.keys(groupedByTag).length} tag
                 {Object.keys(groupedByTag).length === 1 ? "" : "s"}
@@ -232,29 +220,29 @@ const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
 
               {Object.entries(groupedByTag).map(([tag, ops]) => (
                 <div key={tag}>
-                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
-                    {tag} ({ops.length})
-                  </p>
-                  <div className="space-y-1.5">
+                  <h3 className="mb-2 text-sm font-semibold text-ink">
+                    {tag}{" "}
+                    <span className="font-normal text-faint">{ops.length}</span>
+                  </h3>
+                  <div className="divide-y divide-line border-y border-line">
                     {ops.map(({ path, method, operation }) => (
                       <div
                         key={`${method}-${path}`}
-                        className="flex items-start gap-3 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2"
+                        className="flex items-start gap-3 py-2"
                       >
                         <span
-                          className={`shrink-0 ${
-                            METHOD_STYLES[method] ??
-                            "method-pill bg-white/10 text-slate-300"
+                          className={`mt-px shrink-0 ${
+                            METHOD_STYLES[method] ?? "method-pill"
                           }`}
                         >
                           {method.toUpperCase()}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <code className="block truncate font-mono text-xs text-slate-200">
+                          <code className="block truncate font-mono text-[13px] text-ink">
                             {path}
                           </code>
                           {operation.summary && (
-                            <p className="mt-0.5 truncate text-[11px] text-slate-500">
+                            <p className="mt-0.5 truncate text-xs text-muted">
                               {operation.summary}
                             </p>
                           )}
@@ -266,8 +254,8 @@ const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
               ))}
             </div>
           ) : (
-            <pre className="overflow-auto rounded-lg border border-white/10 bg-black/40 p-4 font-mono text-xs text-emerald-400 sm:text-sm">
-              {rawJson}
+            <pre className="code-block overflow-auto">
+              {highlightJson(rawJson)}
             </pre>
           )}
         </div>

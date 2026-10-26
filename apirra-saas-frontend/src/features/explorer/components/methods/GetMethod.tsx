@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { OpenAPIV3 } from "openapi-types";
 import ParameterSection from "../ParameterSection";
 import CurlGenerator from "../CurlGenerator";
+import RequestBar from "../RequestBar";
 import ResponseDisplay from "../ResponseDisplay";
 import RequestHistory from "../RequestHistory";
 import type { HistoryItem } from "../RequestHistory";
@@ -182,140 +183,41 @@ const GetMethod: React.FC<GetMethodProps> = ({
   // ==================== Render ==================
 
   return (
-    <div className="mx-auto w-full max-w-auto space-y-4 p-3 sm:space-y-6 sm:p-4">
+    <div className="mx-auto w-full max-w-5xl px-4 pb-16 sm:px-8">
       {/* Header */}
-      <div className="rounded-xl border border-white/10 bg-linear-to-br from-white/[0.05] to-white/[0.01] p-4 sm:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 space-y-2 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
-              <span className="method-pill method-pill-get rounded-lg px-3 py-1 text-xs tracking-widest">
-                GET
-              </span>
-              <code className="min-w-0 flex-1 break-all font-mono text-sm text-white">
-                {baseUrl}
-                {endpoint.path}
-              </code>
-            </div>
-            {endpoint.summary && (
-              <p className="text-sm text-slate-400">{endpoint.summary}</p>
-            )}
-          </div>
-        </div>
-      </div>
+      <header className="pb-5 pt-6 sm:pt-8">
+        <h1 className="text-2xl font-semibold tracking-[-0.015em] text-ink">
+          {endpoint.summary || endpoint.path}
+        </h1>
+        {endpoint.description && endpoint.description !== endpoint.summary && (
+          <p className="mt-2 max-w-[70ch] text-[15px] leading-relaxed text-muted">
+            {endpoint.description}
+          </p>
+        )}
+      </header>
 
-      {/* Parameters Section */}
-      {params.length > 0 && (
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Parameters</h2>
-            <button
-              onClick={handleReset}
-              className="rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
-              disabled={
-                isRunning || loading || Object.keys(paramValues).length === 0
-              }
-              aria-label="Clear all parameters"
-            >
-              Clear All
-            </button>
-          </div>
-
-          <div className="space-y-6">
-            {groupedParams.path.length > 0 && (
-              <ParameterSection
-                title="Path Parameters"
-                params={groupedParams.path}
-                paramValues={paramValues}
-                onParamChange={handleParamChange}
-                disabled={isRunning}
-                loading={loading}
-              />
-            )}
-            {groupedParams.query.length > 0 && (
-              <ParameterSection
-                title="Query Parameters"
-                params={groupedParams.query}
-                paramValues={paramValues}
-                onParamChange={handleParamChange}
-                disabled={isRunning}
-                loading={loading}
-              />
-            )}
-            {groupedParams.header.length > 0 && (
-              <ParameterSection
-                title="Headers"
-                params={groupedParams.header}
-                paramValues={paramValues}
-                onParamChange={handleParamChange}
-                disabled={isRunning}
-                loading={loading}
-              />
-            )}
-            {groupedParams.cookie.length > 0 && (
-              <ParameterSection
-                title="Cookies"
-                params={groupedParams.cookie}
-                paramValues={paramValues}
-                onParamChange={handleParamChange}
-                disabled={isRunning}
-                loading={loading}
-              />
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Responses Documentation */}
-      {Object.keys(responses).length > 0 && (
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
-          <h2 className="mb-4 text-lg font-semibold text-white">
-            Response Status Codes
-          </h2>
-          <div className="space-y-2">
-            {Object.entries(responses).map(
-              ([code, resp]: [string, OpenAPIV3.ResponseObject]) => {
-                const isSuccess = code.startsWith("2");
-                return (
-                  <div
-                    key={code}
-                    className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-3"
-                  >
-                    <span
-                      className="rounded px-2.5 py-0.5 text-xs font-bold text-white"
-                      style={{
-                        background: isSuccess
-                          ? "var(--color-post, #3b82f6)"
-                          : "var(--color-delete, #ef4444)",
-                      }}
-                    >
-                      {code}
-                    </span>
-                    <p className="text-sm text-slate-300">
-                      {resp.description ?? "No description"}
-                    </p>
-                  </div>
-                );
-              },
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Request Execution Section */}
-      <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row">
+      {/* Request bar - stays visible while scrolling */}
+      <div className="sticky top-0 z-10 -mx-4 border-b border-line bg-paper/95 px-4 py-3 backdrop-blur sm:-mx-8 sm:px-8">
+        <RequestBar
+          method={endpoint.method}
+          baseUrl={baseUrl}
+          path={endpoint.path}
+          paramValues={paramValues}
+          queryParams={queryParams}
+        >
           <button
-            onClick={handleTry}
-            disabled={loading || isRunning}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500 disabled:opacity-60 sm:flex-none"
-            aria-label={isRunning ? "Sending request" : "Send request"}
-          >
-            {loading || isRunning ? (
-              <>
-                <svg
+              onClick={handleTry}
+              disabled={loading || isRunning}
+              className="btn btn-primary flex-1 px-5 py-2.5 sm:min-w-28 sm:flex-none"
+              aria-label={isRunning ? "Sending request" : "Send request"}
+            >
+              {loading || isRunning ? (
+                <>
+                  <svg
                   className="h-4 w-4 animate-spin"
                   viewBox="0 0 24 24"
                   fill="none"
+                  aria-hidden="true"
                 >
                   <circle
                     className="opacity-25"
@@ -331,43 +233,150 @@ const GetMethod: React.FC<GetMethodProps> = ({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                   />
                 </svg>
-                Sending…
-              </>
-            ) : (
-              <>▶ Send Request</>
-            )}
-          </button>
-        </div>
-
-        {/* cURL Generator Component */}
-        <CurlGenerator
-          method={endpoint.method}
-          baseUrl={baseUrl}
-          path={finalPathForCurl}
-          queryParams={queryParams}
-          headers={{}}
-          onCopy={copyToClipboard}
-          isVisible={showCurl}
-          onToggle={() => setShowCurl(!showCurl)}
-        />
-
-        {/* Response Display Component */}
-        <ResponseDisplay
-          response={response}
-          baseUrl={baseUrl}
-          path={finalPathForCurl}
-          paramValues={paramValues}
-          onCopy={copyToClipboard}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
+                  Sending…
+                </>
+              ) : (
+                <>Send</>
+              )}
+            </button>
+        </RequestBar>
       </div>
 
-      {/* Request History Component */}
-      <RequestHistory
-        history={requestHistory}
-        onSelectRequest={handleRestoreFromHistory}
-      />
+      <div className="mt-8 space-y-10">
+        {/* Parameters Section */}
+        {params.length > 0 ? (
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-base font-semibold text-ink">Parameters</h2>
+              <button
+                onClick={handleReset}
+                className="btn btn-quiet text-[13px]"
+                disabled={
+                  isRunning || loading || Object.keys(paramValues).length === 0
+                }
+                aria-label="Clear all parameters"
+              >
+                Clear all
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {groupedParams.path.length > 0 && (
+                <ParameterSection
+                  title="Path parameters"
+                  params={groupedParams.path}
+                  paramValues={paramValues}
+                  onParamChange={handleParamChange}
+                  disabled={isRunning}
+                  loading={loading}
+                />
+              )}
+              {groupedParams.query.length > 0 && (
+                <ParameterSection
+                  title="Query parameters"
+                  params={groupedParams.query}
+                  paramValues={paramValues}
+                  onParamChange={handleParamChange}
+                  disabled={isRunning}
+                  loading={loading}
+                />
+              )}
+              {groupedParams.header.length > 0 && (
+                <ParameterSection
+                  title="Headers"
+                  params={groupedParams.header}
+                  paramValues={paramValues}
+                  onParamChange={handleParamChange}
+                  disabled={isRunning}
+                  loading={loading}
+                />
+              )}
+              {groupedParams.cookie.length > 0 && (
+                <ParameterSection
+                  title="Cookies"
+                  params={groupedParams.cookie}
+                  paramValues={paramValues}
+                  onParamChange={handleParamChange}
+                  disabled={isRunning}
+                  loading={loading}
+                />
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-muted">
+            This endpoint takes no parameters. Press Send to call it.
+          </p>
+        )}
+
+        {/* Response */}
+        <div>
+          <h2 className="mb-3 text-base font-semibold text-ink">Response</h2>
+          <ResponseDisplay
+            response={response}
+            baseUrl={baseUrl}
+            path={finalPathForCurl}
+            paramValues={paramValues}
+            onCopy={copyToClipboard}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            isLoading={isRunning}
+          />
+
+          {/* cURL Generator Component */}
+          <div className="mt-4">
+            <CurlGenerator
+              method={endpoint.method}
+              baseUrl={baseUrl}
+              path={finalPathForCurl}
+              queryParams={queryParams}
+              headers={{}}
+              onCopy={copyToClipboard}
+              isVisible={showCurl}
+              onToggle={() => setShowCurl(!showCurl)}
+            />
+          </div>
+        </div>
+
+        {/* Responses Documentation */}
+        {Object.keys(responses).length > 0 && (
+          <div>
+            <h2 className="mb-3 text-base font-semibold text-ink">
+              Possible responses
+            </h2>
+            <div className="panel divide-y divide-line">
+              {Object.entries(responses).map(
+                ([code, resp]: [string, OpenAPIV3.ResponseObject]) => {
+                  const isSuccess = code.startsWith("2");
+                  return (
+                    <div
+                      key={code}
+                      className="flex items-baseline gap-4 px-4 py-2.5"
+                    >
+                      <span
+                        className={`w-10 shrink-0 font-mono text-[13px] font-semibold ${
+                          isSuccess ? "text-accent" : "text-danger"
+                        }`}
+                      >
+                        {code}
+                      </span>
+                      <p className="text-sm text-ink-soft">
+                        {resp.description ?? "No description"}
+                      </p>
+                    </div>
+                  );
+                },
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Request History Component */}
+        <RequestHistory
+          history={requestHistory}
+          onSelectRequest={handleRestoreFromHistory}
+        />
+      </div>
 
       {/* Toast Container Component */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />

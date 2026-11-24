@@ -23,15 +23,18 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: apirra-saas-frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: ./apirra-saas-frontend
         run: npm ci
 
       - name: Build
-        working-directory: ./apirra-saas-frontend
         run: npm run build
+
+      # GitHub Pages has no SPA rewrites: serving index.html as 404.html lets a
+      # hard refresh / direct link to /explorer boot the app instead of a 404.
+      - name: Add SPA fallback
+        run: cp dist/index.html dist/404.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -39,7 +42,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./apirra-saas-frontend/dist
+          path: ./dist
 
   deploy:
     environment:

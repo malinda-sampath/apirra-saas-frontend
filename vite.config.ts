@@ -5,6 +5,11 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Served from the root of the custom domain https://apirra.malindasampath.com
+  // (GitHub Pages). If the site ever moves to a project URL like
+  // https://<user>.github.io/<repo>/, set this to "/<repo>/" — the router
+  // basename and demo spec path follow import.meta.env.BASE_URL automatically.
+  base: "/",
   plugins: [react(), tailwindcss()],
   test: {
     // globals: true lets @testing-library/react auto-register its

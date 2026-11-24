@@ -16,6 +16,14 @@ type CurlGeneratorProps = {
 // Methods that conventionally carry a request body
 const BODY_METHODS = new Set(["post", "put", "patch"]);
 
+// POSIX single-quote a value for safe pasting into a shell. Inside single
+// quotes nothing is special ($(), backticks, ", \ are all literal), so the
+// only thing to handle is an embedded ' — close the quote, emit an escaped
+// quote, reopen: it's  ->  'it'\''s'. The URL, header names/values and body
+// all come from an untrusted spec or user input, so every one goes through this.
+const shQuote = (value: string): string =>
+  `'${value.replace(/'/g, `'\\''`)}'`;
+
 const CurlGenerator: React.FC<CurlGeneratorProps> = ({
   method,
   baseUrl,
@@ -47,7 +55,9 @@ const CurlGenerator: React.FC<CurlGeneratorProps> = ({
 
     const fullUrl = `${base}${path}${queryString}`;
 
-    let curl = `curl -X ${method.toUpperCase()} "${fullUrl}"`;
+    // `method` is safe unquoted: the parser only emits names from a fixed
+    // HttpMethod list, never arbitrary spec keys.
+    let curl = `curl -X ${method.toUpperCase()} ${shQuote(fullUrl)}`;
 
     const normalizedMethod = method.toLowerCase();
     const supportsBody = BODY_METHODS.has(normalizedMethod);
@@ -65,23 +75,19 @@ const CurlGenerator: React.FC<CurlGeneratorProps> = ({
 
     Object.entries(headers).forEach(([key, value]) => {
       if (value) {
-        curl += ` \\\n  -H "${key}: ${value}"`;
+        curl += ` \\\n  -H ${shQuote(`${key}: ${value}`)}`;
       }
     });
 
     if (hasBody) {
       if (!hasContentTypeHeader) {
-        curl += ` \\\n  -H "Content-Type: application/json"`;
+        curl += ` \\\n  -H ${shQuote("Content-Type: application/json")}`;
       }
 
       const bodyString =
         typeof body === "string" ? body : JSON.stringify(body, null, 2);
 
-      // Escape any double quotes so the payload stays valid inside the
-      // single-quoted -d argument.
-      const escapedBody = bodyString.replace(/'/g, `'\\''`);
-
-      curl += ` \\\n  -d '${escapedBody}'`;
+      curl += ` \\\n  -d ${shQuote(bodyString)}`;
     }
 
     return curl;

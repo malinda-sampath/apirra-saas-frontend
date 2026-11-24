@@ -218,14 +218,10 @@ Run a single e2e spec: `npx playwright test e2e/home.spec.ts`.
   component must opt in with a `// @vitest-environment jsdom` docblock as
   the first line of the file — see any existing `*.test.tsx` for the
   pattern.
-- **`*.test.ts(x)`, `/e2e/`, `/playwright.config.ts`, and `/src/test/` are
-  all git-ignored** (see `.gitignore`) even though they exist in this
-  working tree, are referenced by `package.json` scripts, and their
-  dependencies (`vitest`, `@testing-library/*`, `@playwright/test`) are
-  real `devDependencies`. `git status`/`git add` won't pick up new or
-  edited test files, and a fresh clone of this repo won't have them at
-  all — don't assume `git log`/`git diff` reflects test changes, and don't
-  be surprised if `git status` shows nothing after editing a test.
+- **Tests are committed** (`*.test.ts(x)`, `e2e/`, `playwright.config.ts`,
+  `src/test/`); only test *output* is git-ignored (`test-results/`,
+  `playwright-report/`, `blob-report/`, `coverage/`). A test change shows
+  up in `git diff` and belongs in the same PR as the code it covers.
 - Playwright's e2e suite runs against dedicated port `5174` (not the
   default `5173`, to avoid clashing with a manually-running dev server)
   plus a mock API server (`e2e/fixtures/mock-api-server.mjs`) on port

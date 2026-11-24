@@ -12,7 +12,7 @@ import Logo from "../../shared/components/Logo";
 // Its `paths` point at JSONPlaceholder, a public sandbox API, so requests
 // must target that origin directly rather than the URL the spec itself was
 // fetched from - see handleLoadDemo below.
-const DEMO_SPEC_PATH = "/test-doc.json";
+const DEMO_SPEC_PATH = `${import.meta.env.BASE_URL}test-doc.json`;
 const DEMO_BASE_URL = "https://jsonplaceholder.typicode.com";
 
 const FEATURES = [

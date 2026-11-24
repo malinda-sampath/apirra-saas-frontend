@@ -233,15 +233,18 @@ Run a single e2e spec: `npx playwright test e2e/home.spec.ts`.
   `playwright.config.ts`.
 
 ## Deployment
-This project directory (`apirra-saas-frontend/`) is nested one level inside
-the git repo root (`apirra-saas-frontned/`). The GitHub Actions workflow that
-builds and deploys it lives **outside this directory**, at
-`../.github/workflows/deploy.yml` (repo root), not under a `.github/` folder
-inside this project. On every push to `main` it runs `npm ci` / `npm run
-build` with `working-directory: ./apirra-saas-frontend`, then publishes
-`./apirra-saas-frontend/dist` to GitHub Pages. If you rename this directory
-or change the build output path, update that workflow file too — it won't
-show up in a search scoped to this project folder.
+The app lives at the git repo root. `.github/workflows/deploy.yml` runs on
+every push to `release/v1.0` (not `main`): `npm ci` / `npm run build`, copies
+`dist/index.html` to `dist/404.html` (SPA fallback, since Pages has no
+rewrites), then publishes `./dist` to GitHub Pages. If you change the build
+output path, update that workflow too.
+
+The site is served from the root of the custom domain
+`https://apirra.malindasampath.com`, so `vite.config.ts` has `base: "/"`.
+Anything that builds a root-relative URL should still go through
+`import.meta.env.BASE_URL` — `BrowserRouter` uses it as `basename`, and the
+demo spec is loaded from `${BASE_URL}test-doc.json` — so moving to a
+`https://<user>.github.io/<repo>/` URL only needs `base` changed.
 
 ## What "done" looks like for a task in this repo
 1. New/changed code follows the existing method-component pattern (state

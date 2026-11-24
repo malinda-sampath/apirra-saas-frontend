@@ -10,11 +10,19 @@ const loadExplorer = async (page: import("@playwright/test").Page) => {
   await expect(page).toHaveURL(/\/explorer$/);
 };
 
+// Sidebar endpoint buttons are named "<METHOD><path> <summary>", e.g.
+// "GET/users List users", so match on all three.
+const endpoint = (method: string, path: string, summary: string) => ({
+  name: new RegExp(
+    `^${method}\\s*${path.replace(/[{}/]/g, "\\$&")}\\s*${summary}$`,
+  ),
+});
+
 test.describe("Explorer - GET", () => {
   test("lists users and shows a live response", async ({ page }) => {
     await loadExplorer(page);
 
-    await page.getByRole("button", { name: /^GET\s*\/users$/ }).click();
+    await page.getByRole("button", endpoint("GET", "/users", "List users")).click();
     await expect(page.getByRole("heading", { name: "Parameters" })).toHaveCount(0);
 
     await page.getByRole("button", { name: /send request/i }).click();
@@ -27,7 +35,7 @@ test.describe("Explorer - GET", () => {
   test("substitutes a path parameter and sends it", async ({ page }) => {
     await loadExplorer(page);
 
-    await page.getByRole("button", { name: /^GET\s*\/users\/\{id\}$/ }).click();
+    await page.getByRole("button", endpoint("GET", "/users/{id}", "Get a user by id")).click();
     await page.getByLabel(/id input/i).fill("1");
     await page.getByRole("button", { name: /send request/i }).click();
 
@@ -37,7 +45,7 @@ test.describe("Explorer - GET", () => {
   test("shows the cURL command for the current request", async ({ page }) => {
     await loadExplorer(page);
 
-    await page.getByRole("button", { name: /^GET\s*\/users$/ }).click();
+    await page.getByRole("button", endpoint("GET", "/users", "List users")).click();
     await page.getByRole("button", { name: /show curl/i }).click();
 
     await expect(page.locator("code", { hasText: "curl -X GET" })).toBeVisible();
@@ -48,7 +56,7 @@ test.describe("Explorer - POST", () => {
   test("sends a request body and gets a 201 back", async ({ page }) => {
     await loadExplorer(page);
 
-    await page.getByRole("button", { name: /^POST\s*\/users$/ }).click();
+    await page.getByRole("button", endpoint("POST", "/users", "Create a user")).click();
 
     const bodyEditor = page.getByLabel(/request body json/i);
     await expect(bodyEditor).toHaveValue(/Grace Hopper/);
@@ -63,7 +71,7 @@ test.describe("Explorer - DELETE", () => {
   test("requires a second click to confirm before sending", async ({ page }) => {
     await loadExplorer(page);
 
-    await page.getByRole("button", { name: /^DELETE\s*\/users\/\{id\}$/ }).click();
+    await page.getByRole("button", endpoint("DELETE", "/users/{id}", "Delete a user")).click();
     await page.getByLabel(/id input/i).fill("2");
 
     const sendButton = page.getByRole("button", { name: "Send request" });
@@ -83,7 +91,7 @@ test.describe("Explorer - DELETE", () => {
   }) => {
     await loadExplorer(page);
 
-    await page.getByRole("button", { name: /^DELETE\s*\/users\/\{id\}$/ }).click();
+    await page.getByRole("button", endpoint("DELETE", "/users/{id}", "Delete a user")).click();
     await page.getByLabel(/id input/i).fill("1");
     await page.getByRole("button", { name: "Send request" }).click();
     await expect(page.getByRole("button", { name: /confirm delete/i })).toBeVisible();
@@ -96,16 +104,17 @@ test.describe("Explorer - DELETE", () => {
 });
 
 test.describe("Explorer - direct navigation", () => {
-  test("hitting /explorer directly shows the empty state (no persisted router state)", async ({
+  test("hitting /explorer directly redirects home (no persisted router state)", async ({
     page,
   }) => {
-    // Documents existing, known behavior (CLAUDE.md known issue: router
-    // state is not persisted) - this is not asserting it as desirable,
-    // just pinning today's behavior so a future fix shows up as an
-    // intentional test change rather than a silent regression.
+    // The loaded spec only lives in router state, so a hard refresh or
+    // direct link has nothing to show. ExplorerPage guards this with
+    // <Navigate to="/" replace /> (see CLAUDE.md, fixed 2026-09-20).
     await page.goto("/explorer");
 
-    await expect(page.getByText(/select an endpoint/i)).toBeVisible();
-    await expect(page.getByPlaceholder(/search endpoints/i)).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(
+      page.getByPlaceholder("http://localhost:8081/v3/api-docs"),
+    ).toBeVisible();
   });
 });

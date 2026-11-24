@@ -7,7 +7,9 @@ test.describe("Home page", () => {
   }) => {
     await page.goto("/");
 
-    await expect(page.getByRole("heading", { name: "APIRRA" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 1, name: /try any api straight from its spec/i }),
+    ).toBeVisible();
     const loadButton = page.getByRole("button", { name: /load api explorer/i });
     await expect(loadButton).toBeDisabled();
 
